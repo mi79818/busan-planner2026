@@ -53,9 +53,11 @@
   <div class="relative h-[250px] w-full overflow-hidden">
     <img src="banner.jpg" alt="Busan Header" class="w-full h-full object-cover object-left" onerror="this.src='https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1920&q=80'">
     <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40"></div>
+  </div>
 
-    <!-- 右下角浮動頁籤 -->
-    <div class="absolute bottom-6 right-4 flex space-x-2 bg-white/80 backdrop-blur-md p-1.5 rounded-full shadow-lg border border-white/50 z-20">
+  <!-- 頁籤選單區塊：改為獨立放置於 Banner 下方外側，不遮擋照片 -->
+  <div class="flex justify-end px-4 -mt-6 z-20">
+    <div class="flex space-x-2 bg-white/90 backdrop-blur-md p-1.5 rounded-full shadow-lg border border-white/50">
       <button @click="currentTab = 'itinerary'" :class="currentTab === 'itinerary' ? 'bg-ocean-dark text-white' : 'text-gray-600'" class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200">
         <i class="fa-solid fa-location-dot text-lg"></i>
       </button>
@@ -72,7 +74,7 @@
   </div>
 
   <!-- 主內容區域 -->
-  <div class="relative -mt-5 bg-[#F4F9F9] rounded-t-[28px] px-4 pt-6 flex-1 z-10 shadow-lg">
+  <div class="relative mt-2 bg-[#F4F9F9] rounded-t-[28px] px-4 pt-4 flex-1 z-10">
 
     <!-- 1. 每日行程頁面 -->
     <div v-if="currentTab === 'itinerary'">
