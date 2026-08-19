@@ -2,754 +2,679 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Busan Travel 2026</title>
-  <!-- Tailwind CSS -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>釜山海洋之旅 Busan Trip</title>
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Vue 3 -->
+  <!-- Vue 3 CDN -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- HTML5 Sortable for Drag and Drop -->
-  <script src="https://cdn.jsdelivr.net/npm/html5sortable@0.13.0/dist/html5sortable.umd.min.js"></script>
-  
+  <!-- SortableJS (拖曳排序) -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <!-- Google Fonts 日系字體 -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+
   <script>
     tailwind.config = {
       theme: {
         extend: {
           colors: {
-            sea: {
-              bg: '#EAF4F8',     // 延伸頂部圖片淺藍天空/海洋底色
-              primary: '#3B82F6',// 主藍色
-              card: '#F8FAFC',   // 極簡極淺藍卡片底色
-              accent: '#0284C7'  // 強調藍
+            ocean: {
+              light: '#EBF4F6',
+              DEFAULT: '#37B7C3',
+              dark: '#088395',
+              deep: '#0A4D68'
             }
+          },
+          fontFamily: {
+            sans: ['"Noto Sans TC"', 'sans-serif']
           }
         }
       }
     }
   </script>
   <style>
-    /* 隱藏滾動條但保持可滾動 */
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .sortable-placeholder {
-      border: 2px dashed #3B82F6;
-      background: #EFF6FF;
-      border-radius: 1rem;
-      margin-bottom: 0.75rem;
-      height: 80px;
+    body {
+      background-color: #B3E5FC; /* 延伸 Banner 天空背景色 */
+      font-family: 'Noto Sans TC', sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
 </head>
-<body class="bg-sea-bg text-slate-700 min-h-screen font-sans flex justify-center selection:bg-blue-200">
+<body class="flex justify-center min-h-screen">
 
-  <!-- App Main Container (模擬手機 App 寬度與質感) -->
-  <div id="app" class="w-full max-w-md min-h-screen flex flex-col relative shadow-2xl bg-sea-bg pb-20">
+<div id="app" class="w-full max-w-md bg-[#F4F9F9] min-h-screen shadow-2xl relative flex flex-col pb-24">
 
-    <!-- 頁首 Banner 與 Tab Nav 區塊 -->
-    <div class="relative w-full h-[250px] shrink-0 overflow-hidden">
-      <!-- 滿版 Banner 圖片 -->
-      <img :src="bannerImg" alt="Busan Banner" class="w-full h-full object-cover object-left-top">
-      
-      <!-- 浮動於右下角的 Tab 按鈕列 -->
-      <div class="absolute bottom-6 right-4 flex space-x-2 bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg border border-white/50 z-20">
-        <button @click="currentTab = 'schedule'" :class="{'text-sea-primary font-bold border-b-2 border-sea-primary': currentTab === 'schedule'}" class="px-2.5 py-1 text-slate-600 transition">
-          <i class="fa-solid fa-location-dot text-lg"></i>
-        </button>
-        <button @click="currentTab = 'info'" :class="{'text-sea-primary font-bold border-b-2 border-sea-primary': currentTab === 'info'}" class="px-2.5 py-1 text-slate-600 transition">
-          <i class="fa-solid fa-circle-info text-lg"></i>
-        </button>
-        <button @click="currentTab = 'shopping'" :class="{'text-sea-primary font-bold border-b-2 border-sea-primary': currentTab === 'shopping'}" class="px-2.5 py-1 text-slate-600 transition">
-          <i class="fa-solid fa-basket-shopping text-lg"></i>
-        </button>
-        <button @click="currentTab = 'expense'" :class="{'text-sea-primary font-bold border-b-2 border-sea-primary': currentTab === 'expense'}" class="px-2.5 py-1 text-slate-600 transition">
-          <i class="fa-solid fa-coins text-lg"></i>
+  <!-- 頁首 Banner (250px 高度) -->
+  <div class="relative h-[250px] w-full overflow-hidden">
+    <!-- 請將圖片檔命名為 banner.jpg 並與 index.html 放在同一目錄 -->
+    <img src="banner.jpg" alt="Busan Header" class="w-full h-full object-cover object-left" onerror="this.src='https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1920&q=80'">
+    <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40"></div>
+
+    <!-- 右下角浮動頁籤 (Icon 分頁按鈕) -->
+    <div class="absolute bottom-6 right-4 flex space-x-2 bg-white/80 backdrop-blur-md p-1.5 rounded-full shadow-lg border border-white/50 z-20">
+      <button @click="currentTab = 'itinerary'" :class="currentTab === 'itinerary' ? 'bg-ocean-dark text-white' : 'text-gray-600'" class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200">
+        <i class="fa-solid fa-location-dot text-lg"></i>
+      </button>
+      <button @click="currentTab = 'info'" :class="currentTab === 'info' ? 'bg-ocean-dark text-white' : 'text-gray-600'" class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200">
+        <i class="fa-solid fa-circle-info text-lg"></i>
+      </button>
+      <button @click="currentTab = 'shopping'" :class="currentTab === 'shopping' ? 'bg-ocean-dark text-white' : 'text-gray-600'" class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200">
+        <i class="fa-solid fa-basket-shopping text-lg"></i>
+      </button>
+      <button @click="currentTab = 'expenses'" :class="currentTab === 'expenses' ? 'bg-ocean-dark text-white' : 'text-gray-600'" class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200">
+        <i class="fa-solid fa-sack-dollar text-lg"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- 主內容區域：負邊距向上重疊 + 圓弧銜接 -->
+  <div class="relative -mt-5 bg-[#F4F9F9] rounded-t-[28px] px-4 pt-6 flex-1 z-10 shadow-lg">
+
+    <!-- 1. 每日行程頁面 -->
+    <div v-if="currentTab === 'itinerary'">
+      <!-- 日期橫向選擇器 -->
+      <div class="flex space-x-3 overflow-x-auto hide-scrollbar pb-3 mb-4">
+        <button v-for="(day, index) in days" :key="index"
+                @click="selectedDayIndex = index"
+                :class="selectedDayIndex === index ? 'bg-ocean-dark text-white shadow-md scale-105' : 'bg-white text-gray-600 border border-gray-100'"
+                class="flex-shrink-0 flex flex-col items-center justify-center w-16 h-20 rounded-2xl transition-all duration-200">
+          <span class="text-xs font-medium uppercase tracking-wider opacity-80">{{ day.week }}</span>
+          <span class="text-xl font-bold mt-1">{{ day.date }}</span>
         </button>
       </div>
-    </div>
 
-    <!-- 主內容區：向上負邊距與圓角銜接 -->
-    <main class="flex-1 -mt-5 bg-sea-bg rounded-t-3xl pt-5 px-4 relative z-10">
+      <!-- 分類篩選與統計 -->
+      <div class="flex justify-between items-center mb-4">
+        <select v-model="filterCategory" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 outline-none shadow-sm">
+          <option value="全部">全部類型</option>
+          <option value="景點">景點</option>
+          <option value="美食">美食</option>
+          <option value="住宿">住宿</option>
+          <option value="購物">購物</option>
+          <option value="航班">航班</option>
+          <option value="其他">其他</option>
+        </select>
+        <span class="text-xs text-gray-400">長按卡片可拖曳排序</span>
+      </div>
 
-      <!-- ================= 1. 每日行程表 ================= -->
-      <section v-if="currentTab === 'schedule'" class="space-y-4">
-        <!-- 橫向日期選單 -->
-        <div class="flex space-x-3 overflow-x-auto no-scrollbar py-2 px-1">
-          <button v-for="(day, idx) in days" :key="idx" 
-                  @click="activeDayIdx = idx"
-                  :class="activeDayIdx === idx ? 'bg-sea-primary text-white shadow-md scale-105' : 'bg-white text-slate-600 hover:bg-slate-100'"
-                  class="flex-shrink-0 w-16 py-2 rounded-2xl flex flex-col items-center justify-center transition-all duration-200">
-            <span class="text-sm font-bold tracking-wider">{{ day.weekDay }}</span>
-            <span class="text-lg font-extrabold leading-none mt-1">{{ day.dateNum }}</span>
-          </button>
+      <!-- 天氣資訊卡 (呈現於第一項之前) -->
+      <div class="bg-gradient-to-r from-blue-400 to-ocean-dark text-white rounded-2xl p-4 mb-4 shadow-sm flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <i :class="weatherIcon" class="text-3xl"></i>
+          <div>
+            <div class="text-xs opacity-90">釜山即時天氣</div>
+            <div class="text-lg font-bold">{{ weather.temp }}°C・{{ weather.desc }}</div>
+          </div>
         </div>
+        <div class="text-right text-xs opacity-90">
+          <div><i class="fa-solid fa-umbrella mr-1"></i>降雨率: {{ weather.pop }}%</div>
+          <div>風速: {{ weather.wind }} m/s</div>
+        </div>
+      </div>
 
-        <!-- 篩選分類與排序模式開關 -->
-        <div class="flex justify-between items-center bg-white/80 backdrop-blur-sm px-3 py-2 rounded-xl text-xs shadow-sm">
-          <div class="flex items-center space-x-1">
-            <span class="text-slate-500 font-medium"><i class="fa-solid fa-filter mr-1"></i> 分類:</span>
-            <select v-model="filterCategory" class="bg-transparent font-bold text-sea-accent focus:outline-none">
-              <option value="全部">全部顯示</option>
-              <option value="景點">景點</option>
-              <option value="美食">美食</option>
-              <option value="住宿">住宿</option>
-              <option value="購物">購物</option>
-              <option value="航班">航班</option>
-              <option value="其他">其他</option>
-            </select>
+      <!-- 行程清單 (可拖曳) -->
+      <div id="itinerary-list" class="space-y-3">
+        <div v-for="(item, idx) in currentDayItinerary" :key="item.id" :data-id="item.id" class="group relative">
+
+          <!-- 交通時間顯示器 (上一個點到這一個點) -->
+          <div v-if="idx > 0 || (idx === 0 && item.category !== '航班')" class="flex items-center justify-center my-2 text-xs text-ocean-dark font-medium bg-ocean-light/60 py-1 px-3 rounded-full w-max mx-auto border border-ocean/20">
+            <i :class="getTransIcon(item.transType)" class="mr-1.5"></i>
+            <span>{{ getTransText(idx) }}</span>
           </div>
 
-          <!-- 排序模式切換按鈕 -->
-          <button @click="toggleSortMode" 
-                  :class="isSortMode ? 'bg-amber-500 text-white font-bold' : 'bg-slate-100 text-slate-600'"
-                  class="px-2.5 py-1 rounded-lg text-xs flex items-center space-x-1 transition">
-            <i :class="isSortMode ? 'fa-solid fa-check' : 'fa-solid fa-arrows-up-down'"></i>
-            <span>{{ isSortMode ? '完成排序' : '開啟排序模式' }}</span>
-          </button>
-        </div>
-
-        <!-- 當日天氣資訊 -->
-        <div class="bg-gradient-to-r from-blue-400 to-sky-300 text-white p-4 rounded-2xl shadow-sm flex items-center justify-between">
-          <div class="flex items-center space-x-3">
-            <i :class="weather.icon" class="text-3xl"></i>
-            <div>
-              <div class="text-xs opacity-90">釜山今日天氣</div>
-              <div class="text-xl font-bold">{{ weather.temp }}°C <span class="text-xs font-normal">({{ weather.desc }})</span></div>
+          <!-- 航班卡片專用樣式 -->
+          <div v-if="item.category === '航班'" class="bg-gradient-to-br from-slate-800 to-slate-700 text-white p-4 rounded-2xl shadow-sm border border-slate-600">
+            <div class="flex justify-between items-center mb-2">
+              <span class="bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">FLIGHT</span>
+              <span class="text-xs text-slate-300">{{ item.flightNo }}</span>
             </div>
-          </div>
-          <div class="text-right text-xs opacity-90">
-            <div><i class="fa-solid fa-umbrella mr-1"></i>降雨率 {{ weather.rain }}%</div>
-          </div>
-        </div>
-
-        <!-- 行程卡片列表 -->
-        <div class="space-y-3" id="sortable-list">
-          <div v-for="(item, idx) in currentFilteredItems" :key="item.id" :data-id="item.id" class="sortable-item">
-            
-            <!-- 交通時間指示條（上一個行程到該行程，預設或新增皆以計程車 ICON 呈現） -->
-            <div v-if="idx >= 0" class="flex items-center justify-center space-x-2 py-1.5 text-xs text-slate-400">
-              <span class="h-[1px] w-8 bg-slate-300"></span>
-              <span class="bg-white/90 px-2.5 py-0.5 rounded-full border border-slate-200 shadow-2xs font-medium text-[11px]">
-                <i :class="getTransIcon(item.transType)" class="mr-1 text-sea-primary"></i>
-                {{ idx === 0 ? '飯店/前點出發 ➔ ' : '' }}{{ item.transTime || '計程車約15分' }}
-              </span>
-              <span class="h-[1px] w-8 bg-slate-300"></span>
-            </div>
-
-            <!-- 特殊樣式：航班卡片 -->
-            <div v-if="item.category === '航班'" 
-                 @click="openNaver(item.naver)"
-                 class="bg-gradient-to-br from-slate-800 to-slate-700 text-white p-4 rounded-2xl shadow-md border border-slate-600 relative overflow-hidden cursor-pointer hover:opacity-95 transition">
-              <div class="flex justify-between items-center mb-2">
-                <span class="bg-blue-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">FLIGHT {{ item.flightNo }}</span>
-                <div class="flex items-center space-x-2">
-                  <span class="text-xs text-slate-300">{{ item.time }}</span>
-                  <i v-if="isSortMode" class="fa-solid fa-grip-lines drag-handle text-slate-400 text-base cursor-grab px-1"></i>
+            <div class="flex justify-between items-center my-3 text-center">
+              <div>
+                <div class="text-2xl font-bold">{{ item.depCode }}</div>
+                <div class="text-xs text-slate-300">{{ item.depTime }}</div>
+              </div>
+              <div class="flex-1 px-4 flex flex-col items-center">
+                <span class="text-[10px] text-slate-400 mb-1">{{ item.duration }}</span>
+                <div class="w-full h-0.5 bg-slate-500 relative flex items-center justify-center">
+                  <i class="fa-solid fa-plane text-xs text-blue-400 absolute"></i>
                 </div>
               </div>
-              <div class="flex justify-between items-center my-2 px-2">
-                <div class="text-center"><div class="text-2xl font-black">{{ item.fromCode || 'TPE' }}</div><div class="text-[10px] text-slate-300">{{ item.from }}</div></div>
-                <i class="fa-solid fa-plane text-sea-primary text-xl"></i>
-                <div class="text-center"><div class="text-2xl font-black">{{ item.toCode || 'PUS' }}</div><div class="text-[10px] text-slate-300">{{ item.to }}</div></div>
-              </div>
-              <div class="text-xs text-slate-300 mt-2 border-t border-slate-600/50 pt-2 flex justify-between">
-                <span>{{ item.title }}</span>
-                <span>點擊開地圖 <i class="fa-solid fa-chevron-right text-[10px]"></i></span>
+              <div>
+                <div class="text-2xl font-bold">{{ item.arrCode }}</div>
+                <div class="text-xs text-slate-300">{{ item.arrTime }}</div>
               </div>
             </div>
+            <div class="text-xs text-slate-300 border-t border-slate-600/50 pt-2 mt-2 flex justify-between">
+              <span>{{ item.title }}</span>
+              <button @click="openEditModal(item)" class="text-blue-300 underline">編輯</button>
+            </div>
+          </div>
 
-            <!-- 一般行程卡片 -->
-            <div v-else 
-                 class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between relative group hover:shadow-md transition">
-              
-              <div class="flex justify-between items-start">
+          <!-- 一般行程卡片 -->
+          <div v-else class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start">
+              <div class="flex-1">
                 <div class="flex items-center space-x-2">
-                  <span class="px-2 py-0.5 rounded-md text-[10px] font-bold text-white" :class="getCategoryBadgeClass(item.category)">
+                  <span :class="getCategoryBadgeClass(item.category)" class="text-[10px] px-2 py-0.5 rounded-md font-semibold">
                     {{ item.category }}
                   </span>
-                  <span class="text-xs text-slate-400 font-medium"><i class="fa-regular fa-clock mr-1"></i>{{ item.time }}</span>
+                  <span class="text-xs font-semibold text-gray-400">{{ item.time }}</span>
                 </div>
-                
-                <div class="flex items-center space-x-2">
-                  <!-- 編輯按鈕 (需要密碼) -->
-                  <button @click.stop="authAction(() => openEditModal(item))" class="text-slate-300 hover:text-slate-500 p-1">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                  </button>
-                  <!-- 排序模式下的拖曳把手 -->
-                  <i v-if="isSortMode" class="fa-solid fa-grip-lines drag-handle text-slate-400 text-base cursor-grab p-1 bg-slate-50 rounded"></i>
-                </div>
+                <h3 class="font-bold text-gray-800 text-base mt-1">{{ item.title }}</h3>
+                <p v-if="item.address" class="text-xs text-gray-500 mt-0.5 line-clamp-1"><i class="fa-solid fa-location-dot text-ocean-dark mr-1"></i>{{ item.address }}</p>
               </div>
-
-              <div class="my-2" @click="openNaver(item.naver)">
-                <h4 class="font-bold text-slate-800 text-base flex items-center">
-                  {{ item.title }}
-                  <i class="fa-solid fa-arrow-up-right-from-square text-xs text-sea-primary ml-1.5 opacity-70"></i>
-                </h4>
-                <p v-if="item.hours" class="text-xs text-slate-500 mt-0.5"><i class="fa-regular fa-calendar-check mr-1"></i>營業時間：{{ item.hours }}</p>
-                <p v-if="item.ticket" class="text-xs text-amber-600 mt-0.5"><i class="fa-solid fa-ticket mr-1"></i>門票：{{ item.ticket }}</p>
-                <p v-if="item.note" class="text-xs text-slate-600 bg-slate-50 p-2 rounded-lg mt-2 border border-slate-100">{{ item.note }}</p>
-              </div>
-
-              <!-- Naver 地圖按鈕 -->
-              <div class="mt-1 pt-2 border-t border-slate-50 flex justify-between items-center text-xs">
-                <span class="text-[10px] text-slate-400 truncate max-w-[200px]">{{ item.address || '韓國釜山' }}</span>
-                <button @click.stop="openNaver(item.naver)" class="bg-sea-bg text-sea-accent hover:bg-blue-100 font-bold px-2.5 py-1 rounded-lg transition flex items-center space-x-1">
-                  <i class="fa-solid fa-diamond-turn-right text-xs"></i>
-                  <span>導航</span>
-                </button>
-              </div>
+              <button @click="openEditModal(item)" class="text-gray-300 hover:text-ocean-dark p-1">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
             </div>
 
+            <!-- 詳細資訊欄位 -->
+            <div class="mt-3 text-xs text-gray-600 bg-gray-50 p-2.5 rounded-xl space-y-1">
+              <div v-if="item.openHours"><i class="fa-regular fa-clock mr-1 text-gray-400"></i>營業時間: {{ item.openHours }}</div>
+              <div v-if="item.ticket"><i class="fa-solid fa-ticket mr-1 text-gray-400"></i>門票費用: {{ item.ticket }}</div>
+              <div v-if="item.note"><i class="fa-regular fa-note-sticky mr-1 text-gray-400"></i>備註: {{ item.note }}</div>
+            </div>
+
+            <!-- Naver Map 導航按鈕 -->
+            <div class="mt-3 flex justify-end">
+              <a :href="item.naverUrl || 'https://map.naver.com'" target="_blank" class="inline-flex items-center space-x-1.5 bg-[#03C75A] text-white text-xs px-3.5 py-1.5 rounded-full font-medium shadow-sm hover:bg-emerald-600 transition-colors">
+                <i class="fa-solid fa-location-arrow"></i>
+                <span>NAVER 導航</span>
+              </a>
+            </div>
           </div>
+
         </div>
-      </section>
+      </div>
 
-      <!-- ================= 2. 資訊頁面 ================= -->
-      <section v-if="currentTab === 'info'" class="space-y-5">
-        <!-- 匯率換算 -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-          <h3 class="font-bold text-slate-800 mb-3 flex items-center text-sm">
-            <i class="fa-solid fa-calculator text-sea-primary mr-2"></i>即時匯率換算 (韓元 KRW ➔ 台幣 TWD)
-          </h3>
-          <div class="flex items-center space-x-2">
-            <div class="flex-1">
-              <label class="text-[10px] text-slate-400 block mb-1">韓幣 (₩)</label>
-              <input v-model.number="exchange.krw" type="number" placeholder="10000" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold focus:outline-none focus:border-sea-primary">
-            </div>
-            <i class="fa-solid fa-arrow-right-arrow-left text-slate-300 mt-4"></i>
-            <div class="flex-1">
-              <label class="text-[10px] text-slate-400 block mb-1">約合台幣 (NT$)</label>
-              <div class="w-full bg-blue-50/50 border border-blue-100 rounded-xl px-3 py-2 text-sm font-extrabold text-sea-accent">
-                {{ calculatedTwd }}
-              </div>
-            </div>
-          </div>
-          <div class="text-[10px] text-slate-400 mt-2 text-right">* 估算匯率 1 TWD ≈ {{ exchange.rate }} KRW</div>
-        </div>
+      <!-- 新增行程 Floating Button -->
+      <button @click="openAddModal" class="fixed bottom-6 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30 hover:scale-105 active:scale-95 transition-transform">
+        <i class="fa-solid fa-plus"></i>
+      </button>
+    </div>
 
-        <!-- 航班資訊卡 -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
-          <h3 class="font-bold text-slate-800 flex items-center text-sm">
-            <i class="fa-solid fa-plane-departure text-sea-primary mr-2"></i>航班資訊
-          </h3>
-          <!-- 去程 -->
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1">
-            <div class="flex justify-between font-bold text-slate-700">
-              <span>去程：8/31 (一)</span>
-              <span class="text-sea-primary">BX 794</span>
-            </div>
-            <div class="flex justify-between text-slate-500 pt-1">
-              <span>13:30 台北(桃園)</span>
-              <span>➔</span>
-              <span>17:05 釜山(金海)</span>
-            </div>
-            <div class="text-[10px] text-slate-400">飛行時間：2小時35分</div>
+    <!-- 2. 資訊頁面 -->
+    <div v-if="currentTab === 'info'" class="space-y-5">
+      <!-- 匯率換算 -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+        <h3 class="font-bold text-gray-800 text-sm mb-3 flex items-center">
+          <i class="fa-solid fa-calculator text-ocean-dark mr-2"></i>即時匯率換算 (韓元 ➔ 台幣)
+        </h3>
+        <div class="flex items-center space-x-2">
+          <div class="flex-1">
+            <label class="text-[10px] text-gray-400">韓元 (KRW)</label>
+            <input type="number" v-model="krwInput" placeholder="例如: 10000" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-semibold outline-none focus:border-ocean">
           </div>
-          <!-- 回程 -->
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1">
-            <div class="flex justify-between font-bold text-slate-700">
-              <span>回程：9/05 (六)</span>
-              <span class="text-sea-primary">BX 791</span>
-            </div>
-            <div class="flex justify-between text-slate-500 pt-1">
-              <span>14:15 釜山(金海)</span>
-              <span>➔</span>
-              <span>15:50 台北(桃園)</span>
-            </div>
-            <div class="text-[10px] text-slate-400">飛行時間：2小時35分</div>
-          </div>
-        </div>
-
-        <!-- 住宿資訊卡 -->
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
-          <h3 class="font-bold text-slate-800 flex items-center text-sm">
-            <i class="fa-solid fa-hotel text-sea-primary mr-2"></i>住宿資訊
-          </h3>
-          <!-- 住宿 1 -->
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1.5">
-            <div class="font-bold text-slate-800">廣安里民宿 (8/31 ~ 9/1，2晚)</div>
-            <div class="text-slate-500">地址：부산 수영구 민락수변로 49</div>
-            <button @click="openNaver('https://naver.me/5UVeuY2u')" class="w-full bg-white border border-slate-200 text-sea-accent py-1.5 rounded-lg text-xs font-bold shadow-sm hover:bg-slate-50">
-              <i class="fa-solid fa-map-location-dot mr-1"></i>開啟 NAVER 地圖導航
-            </button>
-          </div>
-          <!-- 住宿 2 -->
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1.5">
-            <div class="font-bold text-slate-800">海雲台民宿 (9/2 ~ 9/4，3晚)</div>
-            <div class="text-slate-500">地址：부산시 해운대해변로 298번길 29, 해운대 푸르지오시티</div>
-            <button @click="openNaver('https://naver.me/5nh1UWce')" class="w-full bg-white border border-slate-200 text-sea-accent py-1.5 rounded-lg text-xs font-bold shadow-sm hover:bg-slate-50">
-              <i class="fa-solid fa-map-location-dot mr-1"></i>開啟 NAVER 地圖導航
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= 3. 購物清單 ================= -->
-      <section v-if="currentTab === 'shopping'" class="space-y-4">
-        <div class="grid grid-cols-2 gap-3">
-          <div v-for="(item, idx) in shoppingList" :key="idx" class="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-            <div class="w-full h-32 bg-slate-100 rounded-xl overflow-hidden mb-2 relative">
-              <img v-if="item.img" :src="item.img" class="w-full h-full object-cover">
-              <div v-else class="w-full h-full flex flex-col items-center justify-center text-slate-300">
-                <i class="fa-solid fa-image text-2xl"></i>
-                <span class="text-[10px] mt-1">無圖片</span>
-              </div>
-            </div>
-            <div class="font-bold text-xs text-slate-800 truncate">{{ item.name }}</div>
-            <div class="text-[10px] text-slate-400 mt-1 flex justify-between items-center">
-              <span>已預購/欲買</span>
-              <button @click="removeShoppingItem(idx)" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button>
+          <i class="fa-solid fa-arrow-right-arrow-left text-gray-300 mt-4"></i>
+          <div class="flex-1">
+            <label class="text-[10px] text-gray-400">約折合台幣 (TWD)</label>
+            <div class="w-full bg-ocean-light/50 border border-ocean/20 rounded-xl px-3 py-2 text-sm font-bold text-ocean-dark">
+              NT$ {{ calculatedTwd }}
             </div>
           </div>
         </div>
-      </section>
+        <div class="text-[10px] text-gray-400 mt-2 text-right">* 預設匯率基準: 1 TWD ≈ 42 KRW (約乘 0.024)</div>
+      </div>
 
-      <!-- ================= 4. 花費紀錄 ================= -->
-      <section v-if="currentTab === 'expense'" class="space-y-4">
-        <!-- 總花費統計 -->
-        <div class="bg-gradient-to-r from-sea-primary to-blue-600 text-white p-4 rounded-2xl shadow-md">
-          <div class="text-xs opacity-80">總花費統計 (韓元)</div>
-          <div class="text-3xl font-black mt-1">₩ {{ totalExpense.toLocaleString() }}</div>
-          <div class="text-xs opacity-90 mt-1">約合 NT$ {{ Math.round(totalExpense / exchange.rate).toLocaleString() }}</div>
+      <!-- 航班資訊概覽 -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3">
+        <h3 class="font-bold text-gray-800 text-sm flex items-center">
+          <i class="fa-solid fa-plane-departure text-ocean-dark mr-2"></i>航班資訊
+        </h3>
+        <!-- 去程 -->
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1">
+          <div class="flex justify-between font-bold text-slate-700">
+            <span>去程：8/31(一)</span>
+            <span class="text-ocean-dark">BX 794</span>
+          </div>
+          <div>桃園(TPE) 13:30 ➔ 釜山(PUS) 17:05</div>
+          <div class="text-gray-400 text-[10px]">飛行時間：2小時35分</div>
         </div>
+        <!-- 回程 -->
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1">
+          <div class="flex justify-between font-bold text-slate-700">
+            <span>回程：9/5(六)</span>
+            <span class="text-ocean-dark">BX 791</span>
+          </div>
+          <div>釜山(PUS) 14:15 ➔ 桃園(TPE) 15:50</div>
+          <div class="text-gray-400 text-[10px]">飛行時間：2小時35分</div>
+        </div>
+      </div>
 
-        <!-- 花費明細列表 -->
-        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-3">
-          <h3 class="font-bold text-slate-800 text-sm mb-2">支出明細</h3>
-          <div v-if="expenses.length === 0" class="text-center py-6 text-xs text-slate-400">尚無任何消費記錄</div>
-          <div v-for="(exp, idx) in expenses" :key="idx" class="flex justify-between items-center border-b border-slate-50 pb-2.5 text-xs">
+      <!-- 住宿資訊 -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3">
+        <h3 class="font-bold text-gray-800 text-sm flex items-center">
+          <i class="fa-solid fa-hotel text-ocean-dark mr-2"></i>住宿資訊
+        </h3>
+        <!-- 住宿 1 -->
+        <div class="border-b border-gray-100 pb-3 space-y-1">
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-xs text-gray-800">廣安里民宿 (8/31 ~ 9/1)</span>
+            <span class="text-[10px] bg-ocean-light text-ocean-dark px-2 py-0.5 rounded-full font-medium">2 晚</span>
+          </div>
+          <p class="text-xs text-gray-500">부산 수영구 민락수변로 49</p>
+          <a href="https://naver.me/5UVeuY2u" target="_blank" class="inline-block text-xs text-[#03C75A] font-semibold mt-1">
+            <i class="fa-solid fa-map-pin mr-1"></i>開啟 NAVER 地圖
+          </a>
+        </div>
+        <!-- 住宿 2 -->
+        <div class="space-y-1 pt-1">
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-xs text-gray-800">海雲台民宿 (9/2 ~ 9/4)</span>
+            <span class="text-[10px] bg-ocean-light text-ocean-dark px-2 py-0.5 rounded-full font-medium">3 晚</span>
+          </div>
+          <p class="text-xs text-gray-500">부산시 해운대해변로 298번길 29, 해운대 푸르지오시티</p>
+          <a href="https://naver.me/5nh1UWce" target="_blank" class="inline-block text-xs text-[#03C75A] font-semibold mt-1">
+            <i class="fa-solid fa-map-pin mr-1"></i>開啟 NAVER 地圖
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. 購物清單頁面 -->
+    <div v-if="currentTab === 'shopping'">
+      <div class="grid grid-cols-2 gap-3">
+        <div v-for="(item, idx) in shoppingList" :key="idx" class="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 relative group flex flex-col justify-between">
+          <div>
+            <div class="w-full h-32 bg-gray-100 rounded-xl overflow-hidden mb-2 relative">
+              <img :src="item.image || 'https://via.placeholder.com/150?text=No+Image'" class="w-full h-full object-cover">
+            </div>
+            <h4 class="font-bold text-xs text-gray-800 line-clamp-2">{{ item.name }}</h4>
+          </div>
+          <button @click="deleteShoppingItem(idx)" class="absolute top-2 right-2 bg-black/50 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 新增購物清單 Button -->
+      <button @click="showShoppingModal = true" class="fixed bottom-6 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30">
+        <i class="fa-solid fa-plus"></i>
+      </button>
+    </div>
+
+    <!-- 4. 花費記帳頁面 -->
+    <div v-if="currentTab === 'expenses'" class="space-y-4">
+      <!-- 總花費統計 -->
+      <div class="bg-gradient-to-r from-ocean-dark to-ocean-deep text-white p-5 rounded-2xl shadow-md">
+        <span class="text-xs opacity-80">累積總花費</span>
+        <div class="text-3xl font-extrabold mt-1">₩ {{ totalExpenses.toLocaleString() }}</div>
+        <div class="text-xs opacity-80 mt-1">約合 NT$ {{ Math.round(totalExpenses * 0.024).toLocaleString() }}</div>
+      </div>
+
+      <!-- 花費列表 -->
+      <div class="space-y-2">
+        <div v-for="(exp, idx) in expenses" :key="idx" class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-ocean-light text-ocean-dark flex items-center justify-center font-bold text-sm">
+              {{ exp.category ? exp.category[0] : '其' }}
+            </div>
             <div>
-              <div class="font-bold text-slate-800">{{ exp.name }}</div>
-              <div class="text-[10px] text-slate-400 space-x-1">
-                <span>{{ exp.date }}</span>
-                <span>•</span>
-                <span class="bg-slate-100 px-1.5 py-0.5 rounded">{{ exp.category }}</span>
-                <span class="bg-blue-50 text-sea-primary px-1.5 py-0.5 rounded">{{ exp.payMethod }}</span>
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="font-extrabold text-slate-700">₩ {{ Number(exp.amount).toLocaleString() }}</div>
-              <button @click="removeExpense(idx)" class="text-[10px] text-slate-300 hover:text-red-400">刪除</button>
+              <div class="font-bold text-xs text-gray-800">{{ exp.name }}</div>
+              <div class="text-[10px] text-gray-400">{{ exp.date }} ・ {{ exp.payMethod }}</div>
             </div>
           </div>
-        </div>
-      </section>
-
-    </main>
-
-    <!-- 浮動新增按鈕 (FAB) -->
-    <button v-if="currentTab !== 'info'" 
-            @click="authAction(handleFabClick)"
-            class="fixed bottom-6 right-6 w-14 h-14 bg-sea-primary text-white rounded-full shadow-xl flex items-center justify-center text-xl font-bold z-50 hover:bg-blue-600 transition active:scale-95">
-      <i class="fa-solid fa-plus"></i>
-    </button>
-
-    <!-- Modal 彈出視窗：行程 新增 / 編輯 -->
-    <div v-if="showModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-3 text-xs max-h-[90vh] overflow-y-auto">
-        <h3 class="font-bold text-base text-slate-800">{{ isEditing ? '編輯行程' : '新增行程' }}</h3>
-        
-        <div>
-          <label class="block text-slate-500 mb-1">分類</label>
-          <select v-model="formItem.category" class="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50">
-            <option>景點</option><option>美食</option><option>住宿</option><option>購物</option><option>航班</option><option>其他</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-slate-500 mb-1">行程名稱</label>
-          <input v-model="formItem.title" type="text" class="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50" placeholder="例如：甘川洞文化村">
-        </div>
-
-        <div class="flex space-x-2">
-          <div class="flex-1">
-            <label class="block text-slate-500 mb-1">時間</label>
-            <input v-model="formItem.time" type="text" class="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50" placeholder="09:30~12:00">
+          <div class="text-right">
+            <div class="font-bold text-sm text-gray-800">₩ {{ Number(exp.amount).toLocaleString() }}</div>
+            <button @click="deleteExpense(idx)" class="text-[10px] text-red-400">刪除</button>
           </div>
-          <div class="flex-1">
-            <label class="block text-slate-500 mb-1">預估計程車車程</label>
-            <input v-model="formItem.transTime" type="text" class="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50" placeholder="計程車約20分">
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-slate-500 mb-1">交通方式</label>
-          <select v-model="formItem.transType" class="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50">
-            <option value="car">計程車 / 開車 / 包車</option>
-            <option value="walk">步行</option>
-            <option value="transit">大眾運輸 (公車/捷運)</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-slate-500 mb-1">營業時間</label>
-          <input v-model="formItem.hours" type="text" class="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50" placeholder="09:00~22:00">
-        </div>
-
-        <div>
-          <label class="block text-slate-500 mb-1">門票資訊</label>
-          <input v-model="formItem.ticket" type="text" class="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50" placeholder="釜山 Pass 免費">
-        </div>
-
-        <div>
-          <label class="block text-slate-500 mb-1">NAVER 地圖連結</label>
-          <input v-model="formItem.naver" type="text" class="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50" placeholder="https://naver.me/...">
-        </div>
-
-        <div>
-          <label class="block text-slate-500 mb-1">特色與備註</label>
-          <textarea v-model="formItem.note" class="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50 h-16" placeholder="備註細節..."></textarea>
-        </div>
-
-        <div class="flex justify-end space-x-2 pt-3 border-t border-slate-100">
-          <button v-if="isEditing" @click="confirmDelete" class="bg-red-50 text-red-500 px-3 py-2 rounded-xl font-bold mr-auto">刪除</button>
-          <button @click="showModal = false" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl font-bold">取消</button>
-          <button @click="saveItem" class="bg-sea-primary text-white px-5 py-2 rounded-xl font-bold">儲存</button>
         </div>
       </div>
-    </div>
 
-    <!-- Modal 彈出視窗：購物清單新增 -->
-    <div v-if="showShoppingModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-3 text-xs">
-        <h3 class="font-bold text-base text-slate-800">新增購物項目</h3>
-        <div>
-          <label class="block text-slate-500 mb-1">商品名稱</label>
-          <input v-model="newShopping.name" type="text" class="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50" placeholder="例如：韓國棉被">
-        </div>
-        <div>
-          <label class="block text-slate-500 mb-1">上傳圖片</label>
-          <input type="file" @change="handleFileUpload" accept="image/*" class="w-full text-slate-500">
-        </div>
-        <div class="flex justify-end space-x-2 pt-3">
-          <button @click="showShoppingModal = false" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl font-bold">取消</button>
-          <button @click="saveShoppingItem" class="bg-sea-primary text-white px-5 py-2 rounded-xl font-bold">新增</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal 彈出視窗：花費新增 -->
-    <div v-if="showExpenseModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-white w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-3 text-xs">
-        <h3 class="font-bold text-base text-slate-800">新增消費記錄</h3>
-        <div>
-          <label class="block text-slate-500 mb-1">類別</label>
-          <select v-model="newExpense.category" class="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50">
-            <option>飲食</option><option>交通</option><option>住宿</option><option>門票</option><option>購物</option><option>其他</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-slate-500 mb-1">名稱</label>
-          <input v-model="newExpense.name" type="text" class="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50" placeholder="例如：稻草烤牛肋排">
-        </div>
-        <div class="flex space-x-2">
-          <div class="flex-1">
-            <label class="block text-slate-500 mb-1">金額 (韓元 ₩)</label>
-            <input v-model.number="newExpense.amount" type="number" class="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50">
-          </div>
-          <div class="flex-1">
-            <label class="block text-slate-500 mb-1">付款方式</label>
-            <select v-model="newExpense.payMethod" class="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50">
-              <option>現金</option><option>信用卡</option>
-            </select>
-          </div>
-        </div>
-        <div>
-          <label class="block text-slate-500 mb-1">日期</label>
-          <input v-model="newExpense.date" type="date" class="w-full border border-slate-200 rounded-xl p-2.5 bg-slate-50">
-        </div>
-        <div class="flex justify-end space-x-2 pt-3">
-          <button @click="showExpenseModal = false" class="bg-slate-100 text-slate-600 px-4 py-2 rounded-xl font-bold">取消</button>
-          <button @click="saveExpenseItem" class="bg-sea-primary text-white px-5 py-2 rounded-xl font-bold">新增記錄</button>
-        </div>
-      </div>
+      <!-- 新增花費 Button -->
+      <button @click="showExpenseModal = true" class="fixed bottom-6 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30">
+        <i class="fa-solid fa-plus"></i>
+      </button>
     </div>
 
   </div>
 
-  <!-- Vue 3 Logic -->
-  <script>
-    const { createApp, ref, computed, onMounted, nextTick } = Vue;
+  <!-- Modal 1: 新增/編輯行程 -->
+  <div v-if="showItineraryModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 max-h-[90vh] overflow-y-auto space-y-3">
+      <h3 class="font-bold text-base text-gray-800 mb-2">{{ isEditMode ? '編輯行程' : '新增行程' }}</h3>
 
-    createApp({
-      setup() {
-        const bannerImg = ref('https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?q=80&w=1920&auto=format&fit=crop');
+      <div>
+        <label class="text-xs text-gray-500">分類</label>
+        <select v-model="modalItem.category" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+          <option value="景點">景點</option>
+          <option value="美食">美食</option>
+          <option value="住宿">住宿</option>
+          <option value="購物">購物</option>
+          <option value="航班">航班</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
 
-        const currentTab = ref('schedule');
-        const activeDayIdx = ref(0);
-        const filterCategory = ref('全部');
-        const isSortMode = ref(false); // 排序模式狀態
+      <div>
+        <label class="text-xs text-gray-500">名稱 / 標題</label>
+        <input type="text" v-model="modalItem.title" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      </div>
 
-        // 密碼驗證邏輯
-        const authAction = (callback) => {
-          const pwd = prompt('請輸入操作密碼：');
-          if (pwd === '868') {
-            callback();
-          } else if (pwd !== null) {
-            alert('密碼錯誤！無法進行調整。');
-          }
-        };
+      <div>
+        <label class="text-xs text-gray-500">時間 / 時段</label>
+        <input type="text" v-model="modalItem.time" placeholder="例如: 10:00~12:00" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      </div>
 
-        // 開啟/關閉 排序模式
-        const toggleSortMode = () => {
-          if (!isSortMode.value) {
-            authAction(() => {
-              isSortMode.value = true;
-              initSortable();
-            });
-          } else {
-            isSortMode.value = false;
-            destroySortable();
-          }
-        };
+      <div>
+        <label class="text-xs text-gray-500">韓文地址 / 說明</label>
+        <input type="text" v-model="modalItem.address" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      </div>
+
+      <div>
+        <label class="text-xs text-gray-500">Naver Map 連結</label>
+        <input type="text" v-model="modalItem.naverUrl" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      </div>
+
+      <div v-if="['景點','美食','住宿','購物'].includes(modalItem.category)">
+        <label class="text-xs text-gray-500">營業時間</label>
+        <input type="text" v-model="modalItem.openHours" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      </div>
+
+      <div v-if="modalItem.category === '景點'">
+        <label class="text-xs text-gray-500">門票費用</label>
+        <input type="text" v-model="modalItem.ticket" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      </div>
+
+      <div>
+        <label class="text-xs text-gray-500">特色 & 備註</label>
+        <textarea v-model="modalItem.note" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none h-20"></textarea>
+      </div>
+
+      <div class="flex space-x-2 pt-3">
+        <button v-if="isEditMode" @click="confirmDeleteItinerary" class="flex-1 bg-red-100 text-red-600 rounded-xl py-3 text-xs font-bold">刪除</button>
+        <button @click="showItineraryModal = false" class="flex-1 bg-gray-100 text-gray-600 rounded-xl py-3 text-xs font-bold">取消</button>
+        <button @click="saveItinerary" class="flex-1 bg-ocean-dark text-white rounded-xl py-3 text-xs font-bold">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: 新增購物清單 -->
+  <div v-if="showShoppingModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-3xl p-5 space-y-3">
+      <h3 class="font-bold text-base text-gray-800">新增購物想買清單</h3>
+      <input type="text" v-model="newShopping.name" placeholder="商品名稱" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      <div>
+        <label class="text-xs text-gray-500 block mb-1">上傳圖片</label>
+        <input type="file" @change="handleImageUpload" accept="image/*" class="text-xs text-gray-500">
+      </div>
+      <div class="flex space-x-2 pt-2">
+        <button @click="showShoppingModal = false" class="flex-1 bg-gray-100 text-gray-600 rounded-xl py-2.5 text-xs font-bold">取消</button>
+        <button @click="addShoppingItem" class="flex-1 bg-ocean-dark text-white rounded-xl py-2.5 text-xs font-bold">加入</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: 新增花費 -->
+  <div v-if="showExpenseModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-3xl p-5 space-y-3">
+      <h3 class="font-bold text-base text-gray-800">記錄花費</h3>
+      <div>
+        <label class="text-xs text-gray-500">類別</label>
+        <select v-model="newExpense.category" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+          <option>飲食</option><option>交通</option><option>住宿</option><option>門票</option><option>購物</option><option>其他</option>
+        </select>
+      </div>
+      <input type="text" v-model="newExpense.name" placeholder="消費名稱" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      <input type="number" v-model="newExpense.amount" placeholder="金額 (韓幣 KRW)" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      <div>
+        <label class="text-xs text-gray-500">付款方式</label>
+        <select v-model="newExpense.payMethod" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+          <option>現金</option><option>信用卡</option>
+        </select>
+      </div>
+      <div class="flex space-x-2 pt-2">
+        <button @click="showExpenseModal = false" class="flex-1 bg-gray-100 text-gray-600 rounded-xl py-2.5 text-xs font-bold">取消</button>
+        <button @click="addExpense" class="flex-1 bg-ocean-dark text-white rounded-xl py-2.5 text-xs font-bold">儲存</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const { createApp } = Vue;
+
+  createApp({
+    data() {
+      return {
+        currentTab: 'itinerary',
+        selectedDayIndex: 0,
+        filterCategory: '全部',
+        krwInput: null,
+        showItineraryModal: false,
+        showShoppingModal: false,
+        showExpenseModal: false,
+        isEditMode: false,
+        modalItem: {},
+        newShopping: { name: '', image: '' },
+        newExpense: { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0] },
 
         // 天氣預設資料
-        const weather = ref({ temp: 24, desc: '晴時多雲', rain: 10, icon: 'fa-solid fa-cloud-sun' });
+        weather: { temp: 26, desc: '多雲晴朗', pop: 10, wind: 2.1 },
 
-        // 匯率
-        const exchange = ref({ krw: 10000, rate: 41.5 });
-        const calculatedTwd = computed(() => {
-          if (!exchange.value.krw) return 0;
-          return Math.round(exchange.value.krw / exchange.value.rate);
-        });
+        // 天數定義
+        days: [
+          { week: 'Mon', date: '8/31' },
+          { week: 'Tue', date: '9/1' },
+          { week: 'Wed', date: '9/2' },
+          { week: 'Thu', date: '9/3' },
+          { week: 'Fri', date: '9/4' },
+          { week: 'Sat', date: '9/5' }
+        ],
 
-        // 日期清單
-        const days = ref([
-          { weekDay: 'Mon', dateNum: '8/31', fullDate: '2026-08-31' },
-          { weekDay: 'Tue', dateNum: '9/1', fullDate: '2026-09-01' },
-          { weekDay: 'Wed', dateNum: '9/2', fullDate: '2026-09-02' },
-          { weekDay: 'Thu', dateNum: '9/3', fullDate: '2026-09-03' },
-          { weekDay: 'Fri', dateNum: '9/4', fullDate: '2026-09-04' },
-          { weekDay: 'Sat', dateNum: '9/5', fullDate: '2026-09-05' }
-        ]);
-
-        // 完整行程資料 (預設皆帶入計程車 ICON 與交通估算)
-        const scheduleData = ref({
+        // 行程預設資料
+        itineraryData: {
           0: [
-            { id: '101', category: '其他', time: '07:30~10:00', title: '星威停車場', note: '車行約1.5~2.5小時（桃園市大園區橫峰里平安路166號）', transTime: '車行約1.5小時', transType: 'car' },
-            { id: '102', category: '其他', time: '10:15~10:30', title: '桃園機場第二航廈報到', note: '準備辦理登機與託運', transTime: '步行約15分', transType: 'walk' },
-            { id: '103', category: '航班', time: '13:30~17:05', title: '台北(桃園) ➔ 釜山', flightNo: 'BX 794', from: '台北(桃園)', fromCode: 'TPE', to: '釜山(金海)', toCode: 'PUS', naver: '', transTime: '飛行2.5小時', transType: 'transit' },
-            { id: '104', category: '其他', time: '18:30~19:00', title: '機場活動櫃台', note: '活動區拿禮物、LG U+ 櫃台實名制 SIM 卡 (Gate 2/3中間)、領釜山 Pass、辦 SES 快速通關', transTime: '步行約30分', transType: 'walk' },
-            { id: '105', category: '住宿', time: '19:00~20:00', title: '廣安里民宿 (放行李)', address: '부산 수영구 민락수변로 49', naver: 'https://naver.me/5UVeuY2u', note: '機場包車直達民宿', transTime: '計程車約1小時', transType: 'car' },
-            { id: '106', category: '美食', time: '20:00~22:00', title: '고결 稻草烤牛肋排', hours: '16:00~24:00', address: '부산 수영구 광안해변로255번길 50', naver: 'https://naver.me/xqbUlk43', transTime: '步行約12分', transType: 'walk' },
-            { id: '107', category: '購物', time: '22:00~', title: 'CU 超商採購', note: '購買隔天早餐', transTime: '步行約5分', transType: 'walk' }
+            { id: 101, category: '航班', title: '台北(桃園) ➔ 釜山', time: '13:30~17:05', flightNo: 'BX 794', depCode: 'TPE', depTime: '13:30', arrCode: 'PUS', arrTime: '17:05', duration: '2h 35m', transType: 'plane' },
+            { id: 102, category: '其他', title: '機場包車及領取物資', time: '18:30~19:00', note: '活動區拿禮物、LG U+ SIM卡(Gate 2/3中間)、領釜山Pass、辦SES快速通關', transType: 'car' },
+            { id: 103, category: '住宿', title: '廣安里民宿放行李', time: '19:00~20:00', address: '부산 수영구 민락수변로 49', naverUrl: 'https://naver.me/5UVeuY2u', transType: 'car' },
+            { id: 104, category: '美食', title: '고결 稻草烤牛肋排', time: '20:00~22:00', openHours: '16:00~24:00', address: '부산 수영구 광안해변로255번길 50 1~2층', naverUrl: 'https://naver.me/xqbUlk43', transType: 'walk' },
+            { id: 105, category: '購物', title: 'CU超商買隔天早餐', time: '22:00~', transType: 'walk' }
           ],
           1: [
-            { id: '201', category: '景點', time: '10:10~12:00', title: '松島纜車 (松島 base station)', hours: '09:00~22:00', address: '부산 서구 송도해변로 171', naver: 'https://naver.me/FvTJ9azl', transTime: '計程車約40分', transType: 'car' },
-            { id: '202', category: '美食', time: '12:30~14:00', title: '太宗台炒瑪麵 (태종대짬뽕)', hours: '09:30~21:30 (週三休)', address: '부산 영도구 태종로 805', naver: 'https://naver.me/5MvcLg2O', transTime: '計程車約30分', transType: 'car' },
-            { id: '203', category: '景點', time: '14:00~16:00', title: '白淺灘文化村 (Having Moment 咖啡)', hours: '店家約11點陸續營業', address: '부산 영도구 절영로 196', naver: 'https://naver.me/GXFV1HpJ', transTime: '計程車約15分', transType: 'car' },
-            { id: '204', category: '美食', time: '17:00~20:00', title: '廣安里逛逛 & 章腸蝦鍋 (이낙에산다)', address: '부산 수영구 남천바다로10번길 68', naver: 'https://naver.me/xSBoXG2G', note: '廣安里旅遊諮詢處下車', transTime: '計程車約40分', transType: 'car' },
-            { id: '205', category: '景點', time: '20:00~', title: '彈性行程: 荒嶺山烽燧台夜景 或 廣安里海邊', address: '부산 부산진구 전포동 산50-18', naver: 'https://naver.me/xNpbw4Xw', transTime: '計程車約25分', transType: 'car' },
-            { id: '206', category: '美食', time: '22:00~', title: '宵夜: 맹구포차 居酒屋 或 PURADAK 炸雞', hours: '居酒屋 18:00~04:00', naver: 'https://naver.me/Fz8CYxyt', note: '炸雞推薦口味：黑蒜/烤玉米起司/墨西哥辣椒', transTime: '計程車約10分', transType: 'car' }
+            { id: 201, category: '景點', title: '松島纜車 (송도 베이스테이션)', time: '10:10~12:00', openHours: '09:00~22:00', address: '부산 서구 송도해변로 171', naverUrl: 'https://naver.me/FvTJ9azl', transType: 'car' },
+            { id: 202, category: '美食', title: '太宗台炒瑪麵 (태종대짬뽕)', time: '12:30~14:00', openHours: '09:30~21:30', address: '부산 영도구 태종로 805 태짬', naverUrl: 'https://naver.me/5MvcLg2O', transType: 'car' },
+            { id: 203, category: '景點', title: '白淺灘文化村 (Having moment咖啡店)', time: '14:00~16:00', address: '부산 영도구 절영로 196 해빙모먼트', naverUrl: 'https://naver.me/GXFV1HpJ', transType: 'car' },
+            { id: 204, category: '景點', title: '廣安里旅遊諮詢處', time: '17:00~20:00', naverUrl: 'https://naver.me/xzxmTb5m', transType: 'car' },
+            { id: 205, category: '美食', title: '이낙에산다 章腸蝦鍋', time: '18:00~20:00', address: '부산 수영구 남천바다로10번길 68 1층', naverUrl: 'https://naver.me/xSBoXG2G', transType: 'walk' },
+            { id: 206, category: '景點', title: '荒嶺山夜景 或 廣安里海邊', time: '20:00~', address: '부산 부산진구 전포동 산50-18', naverUrl: 'https://naver.me/xNpbw4Xw', transType: 'car' },
+            { id: 207, category: '美食', title: '居酒屋(맹구포차) 或 PURADAK炸雞', time: '22:00~', note: '炸雞推薦:黑蒜/烤玉米起司/墨西哥辣椒', naverUrl: 'https://naver.me/Fz8CYxyt', transType: 'walk' }
           ],
           2: [
-            { id: '301', category: '景點', time: '09:30~12:00', title: '甘川洞文化村 (韓服體驗)', address: '부산 사하구 감내2로 180-1', naver: 'https://naver.me/IItc6HR9', note: '釜山 Pass 兌換 ibgogage 韓服 (天氣太熱可取消體驗)', transTime: '計程車約40分', transType: 'car' },
-            { id: '302', category: '美食', time: '12:00~15:00', title: '富平罐頭市場 & 名品韓牛午餐', hours: '韓牛 11:00~21:30', address: '부산 중구 중구로43번길 42', naver: 'https://naver.me/x4FLdDfi', note: '順遊國際市場買棉被(永一寢具)', transTime: '計程車約10分', transType: 'car' },
-            { id: '303', category: '住宿', time: '15:30~16:15', title: '海雲台民宿 (進房放行李)', address: '부산시 해운대해변로 298번길 29', naver: 'https://naver.me/5nh1UWce', transTime: '計程車約30分', transType: 'car' },
-            { id: '304', category: '景點', time: '17:00~18:00', title: '海東龍宮寺', hours: '04:00~19:20', address: '부산 기장군 기장읍 용궁길 86', naver: 'https://naver.me/58NdWaSm', transTime: '計程車約25分', transType: 'car' },
-            { id: '305', category: '美食', time: '18:30~20:00', title: '晚餐：名品巨蟹 (기장명품대게)', hours: '10:00~21:00', address: '부산 기장군 기장읍 차성동로73번길 5', naver: 'https://naver.me/FY3z1DKO', note: '包車至此結束', transTime: '計程車約20分', transType: 'car' }
+            { id: 301, category: '景點', title: '甘川洞文化村 & ibgogage韓服體驗', time: '09:30~12:00', address: '부산 사하구 감내2로 180-1 입고가게', naverUrl: 'https://naver.me/IItc6HR9', transType: 'car' },
+            { id: 302, category: '美食', title: '富平罐頭市場 - 名品韓牛', time: '12:00~15:00', openHours: '11:00~21:30', address: '부산 중구 중구로43번길 42', naverUrl: 'https://naver.me/x4FLdDfi', transType: 'car' },
+            { id: 303, category: '購物', title: '國際市場 (永一寢具買棉被)', time: '14:00~15:00', address: '부산 중구 중구로 36 국제시장 4공구 B동 1층', naverUrl: 'https://naver.me/513kXLnQ', transType: 'walk' },
+            { id: 304, category: '住宿', title: '海雲台民宿放行李', time: '15:30~16:15', address: '부산시 해운대해변로 298번길 29', naverUrl: 'https://naver.me/5nh1UWce', transType: 'car' },
+            { id: 305, category: '景點', title: '海東龍宮寺', time: '17:00~18:00', openHours: '04:00~19:20', address: '부산 기장군 기장읍 용궁길 86', naverUrl: 'https://naver.me/58NdWaSm', transType: 'car' },
+            { id: 306, category: '美食', title: '名品巨蟹 (기장명품대게)', time: '18:30~20:00', openHours: '10:00~21:00', address: '부산 기장군 기장읍 차성동로73번길 5', naverUrl: 'https://naver.me/FY3z1DKO', transType: 'car' }
           ],
           3: [
-            { id: '401', category: '美食', time: '09:30~11:00', title: '早餐：조선대가곰탕 牛骨湯', hours: '08:00~21:00', address: '부산 해운대구 달맞이길62번길 9-1', naver: 'https://naver.me/xSBoXg2J', transTime: '步行約10分', transType: 'walk' },
-            { id: '402', category: '景點', time: '11:30~12:00', title: '膠囊列車 (尾浦站 ➔ 青沙浦站)', address: '부산 해운대구 달맞이길62번길 17', naver: 'https://naver.me/5UVeuY8A', transTime: '步行約10分', transType: 'walk' },
-            { id: '403', category: '美食', time: '13:00~15:00', title: '青沙浦站換票 & 青沙浦河粉午餐', hours: '河粉 10:00~18:00', address: '부산 해운대구 청사포로128번길 6', naver: 'https://naver.me/Fx2wpuxl', transTime: '電車約30分', transType: 'transit' },
-            { id: '404', category: '景點', time: '15:00~15:30', title: '海岸列車 (青沙浦站 ➔ 松亭站)', naver: 'https://naver.me/xq3aEIjM', transTime: '電車約15分', transType: 'transit' },
-            { id: '405', category: '景點', time: '15:30~17:00', title: 'Skyline 滑坡列車', hours: '10:00~18:00', address: '부산 기장군 기장읍 기장해안로 205', naver: 'https://naver.me/xtNI3jDH', transTime: '計程車約10分', transType: 'car' },
-            { id: '406', category: '美食', time: '18:30~20:00', title: '晚餐：風川鰻魚 烤鰻魚', hours: '11:00~22:00', address: '부산 해운대구 달맞이길 22', naver: 'https://naver.me/xllYakSo', transTime: '電車約30分', transType: 'transit' },
-            { id: '407', category: '購物', time: '20:00~', title: '海雲台商圈逛街購物', transTime: '步行約5分', transType: 'walk' }
+            { id: 401, category: '美食', title: '早餐：조선대가곰탕 牛骨湯', time: '09:30~11:00', openHours: '08:00~21:00', address: '부산 해운대구 달맞이길62번길 9-1', naverUrl: 'https://naver.me/xSBoXg2J', transType: 'walk' },
+            { id: 402, category: '景點', title: '膠囊列車 (尾浦站➔青沙浦站)', time: '11:30~12:00', address: '부산 해운대구 달맞이길62번길 17 1층', naverUrl: 'https://naver.me/5UVeuY8A', transType: 'walk' },
+            { id: 403, category: '美食', title: '午餐：青沙浦河粉', time: '13:00~15:00', openHours: '10:00~18:00', address: '부산 해운대구 청사포로128번길 6', naverUrl: 'https://naver.me/Fx2wpuxl', transType: 'walk' },
+            { id: 404, category: '景點', title: 'Skyline 滑坡列車', time: '15:30~17:00', openHours: '10:00~18:00', address: '부산 기장군 기장읍 기장해안로 205', naverUrl: 'https://naver.me/xtNI3jDH', transType: 'car' },
+            { id: 405, category: '美食', title: '晚餐：烤鰻魚 (풍천만민물장어)', time: '18:30~20:00', openHours: '11:00~22:00', address: '부산 해운대구 달맞이길 22 1층', naverUrl: 'https://naver.me/xllYakSo', transType: 'car' }
           ],
           4: [
-            { id: '501', category: '美食', time: '09:30~11:00', title: '早餐 2選1：海雲台參雞湯 / 大海鮑魚粥', address: '부산 해운대구 달맞이길 6', naver: 'https://naver.me/xNpbwa6l', transTime: '步行約10分', transType: 'walk' },
-            { id: '502', category: '購物', time: '11:30~13:00', title: '新世界百貨公司', hours: '10:30~20:30', address: '부산 해운대구 센텀남대로 35', naver: 'https://naver.me/5XcVqz6G', transTime: '計程車約20分', transType: 'car' },
-            { id: '503', category: '景點', time: '13:00~19:00', title: 'SPA LAND 汗蒸幕放鬆', note: '女生 15:45~19:00 前往醫美診所', address: '부산 해운대구 센텀2로 19', naver: 'https://naver.me/GII4VFmz', transTime: '步行約6分', transType: 'walk' },
-            { id: '504', category: '美食', time: '19:00~20:30', title: '晚餐 2選1：東東豬肉湯飯 / 回轉壽司', address: '부산 해운대구 센텀동로 25', naver: 'https://naver.me/5Vx0wBvl', transTime: '步行約11分', transType: 'walk' },
-            { id: '505', category: '購物', time: '20:30~', title: '回台前最後大採購', note: '公車約20分 (₩1,600)', transTime: '公車約20分', transType: 'transit' }
+            { id: 501, category: '美食', title: '人參蔘雞湯 或 大海鮑魚粥', time: '09:30~11:00', naverUrl: 'https://naver.me/xNpbwa6l', transType: 'walk' },
+            { id: 502, category: '購物', title: '新世界百貨', time: '11:30~13:00', openHours: '10:30~20:30', address: '부산 해운대구 센텀남대로 35', naverUrl: 'https://naver.me/5XcVqz6G', transType: 'car' },
+            { id: 503, category: '景點', title: 'SPA LAND 汗蒸幕', time: '13:00~19:00', transType: 'walk' },
+            { id: 504, category: '其他', title: '醫美行程 (女生)', time: '15:45~19:00', address: '부산 해운대구 센텀2로 19 센텀코아 2층', naverUrl: 'https://naver.me/GII4VFmz', transType: 'walk' },
+            { id: 505, category: '美食', title: '晚餐：豬肉米腸湯飯 或 迴轉壽司', time: '19:00~20:30', naverUrl: 'https://naver.me/5Vx0wBvl', transType: 'walk' }
           ],
           5: [
-            { id: '601', category: '其他', time: '10:30~11:30', title: '包車前往金海機場', note: '預估費用 ₩80,000', transTime: '計程車/包車約1小時', transType: 'car' },
-            { id: '602', category: '航班', time: '14:15~15:50', title: '釜山(金海) ➔ 台北(桃園)', flightNo: 'BX 791', from: '釜山(金海)', fromCode: 'PUS', to: '台北(桃園)', toCode: 'TPE', naver: '', note: '機場辦理退稅與午餐', transTime: '飛行2.5小時', transType: 'transit' }
+            { id: 601, category: '其他', title: '包車前往金海機場 (₩80,000)', time: '10:30~11:30', transType: 'car' },
+            { id: 602, category: '航班', title: '釜山 ➔ 台北(桃園)', time: '14:15~15:50', flightNo: 'BX 791', depCode: 'PUS', depTime: '14:15', arrCode: 'TPE', arrTime: '15:50', duration: '2h 35m', transType: 'plane' }
           ]
-        });
+        },
 
-        // 過濾後的行程
-        const currentFilteredItems = computed(() => {
-          const list = scheduleData.value[activeDayIdx.value] || [];
-          if (filterCategory.value === '全部') return list;
-          return list.filter(i => i.category === filterCategory.value);
-        });
+        shoppingList: [
+          { name: '韓國棉被 (永一寢具)', image: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=500' }
+        ],
 
-        // 購物清單 & 花費預設
-        const shoppingList = ref([
-          { name: '韓國夏涼被 (永一寢具)', img: '' },
-          { name: '黑蒜炸雞 / 醬油炸雞', img: '' }
-        ]);
-
-        const expenses = ref([
-          { name: '包車接駁 (首日)', amount: 80000, category: '交通', payMethod: '現金', date: '2026-08-31' },
-          { name: '稻草烤牛肋排', amount: 95000, category: '飲食', payMethod: '信用卡', date: '2026-08-31' }
-        ]);
-
-        const totalExpense = computed(() => {
-          return expenses.value.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
-        });
-
-        // Modal 控制邏輯
-        const showModal = ref(false);
-        const isEditing = ref(false);
-        const formItem = ref({});
-
-        const showShoppingModal = ref(false);
-        const newShopping = ref({ name: '', img: '' });
-
-        const showExpenseModal = ref(false);
-        const newExpense = ref({ category: '飲食', name: '', amount: '', payMethod: '現金', date: '2026-08-31' });
-
-        const handleFabClick = () => {
-          if (currentTab.value === 'schedule') {
-            isEditing.value = false;
-            // 需求1: 新增行程時，預設交通方式為計程車(car)，並自動帶入估算時間
-            formItem.value = { 
-              category: '景點', 
-              transType: 'car', 
-              transTime: '計程車約15分', 
-              time: '', 
-              title: '', 
-              hours: '', 
-              ticket: '', 
-              note: '', 
-              naver: '' 
-            };
-            showModal.value = true;
-          } else if (currentTab.value === 'shopping') {
-            newShopping.value = { name: '', img: '' };
-            showShoppingModal.value = true;
-          } else if (currentTab.value === 'expense') {
-            newExpense.value = { category: '飲食', name: '', amount: '', payMethod: '現金', date: days.value[activeDayIdx.value].fullDate };
-            showExpenseModal.value = true;
-          }
-        };
-
-        const openEditModal = (item) => {
-          isEditing.value = true;
-          formItem.value = { ...item };
-          showModal.value = true;
-        };
-
-        const saveItem = () => {
-          const dayList = scheduleData.value[activeDayIdx.value];
-          // 若沒填交通時間，預設補充計程車資訊
-          if(!formItem.value.transTime) {
-            formItem.value.transTime = '計程車約15分';
-          }
-          if (isEditing.value) {
-            const idx = dayList.findIndex(i => i.id === formItem.value.id);
-            if (idx !== -1) dayList[idx] = { ...formItem.value };
-          } else {
-            formItem.value.id = Date.now().toString();
-            dayList.push({ ...formItem.value });
-          }
-          showModal.value = false;
-        };
-
-        const confirmDelete = () => {
-          if (confirm('確定要刪除此行程嗎？')) {
-            scheduleData.value[activeDayIdx.value] = scheduleData.value[activeDayIdx.value].filter(i => i.id !== formItem.value.id);
-            showModal.value = false;
-          }
-        };
-
-        // 購物清單操作
-        const handleFileUpload = (e) => {
-          const file = e.target.files[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => { newShopping.value.img = event.target.result; };
-            reader.readAsDataURL(file);
-          }
-        };
-        const saveShoppingItem = () => {
-          if (newShopping.value.name) {
-            shoppingList.value.push({ ...newShopping.value });
-            showShoppingModal.value = false;
-          }
-        };
-        const removeShoppingItem = (idx) => { shoppingList.value.splice(idx, 1); };
-
-        // 花費操作
-        const saveExpenseItem = () => {
-          if (newExpense.value.name && newExpense.value.amount) {
-            expenses.value.push({ ...newExpense.value });
-            showExpenseModal.value = false;
-          }
-        };
-        const removeExpense = (idx) => { expenses.value.splice(idx, 1); };
-
-        // 開啟 Naver 地圖
-        const openNaver = (url) => {
-          if (url) window.open(url, '_blank');
-          else alert('暫無 NAVER 地圖連結');
-        };
-
-        // UI 輔助 Icon & 樣式
-        const getTransIcon = (type) => {
-          if (type === 'walk') return 'fa-solid fa-person-walking';
-          if (type === 'transit') return 'fa-solid fa-bus';
-          return 'fa-solid fa-taxi'; // 預設為計程車/車子圖示
-        };
-
-        const getCategoryBadgeClass = (cat) => {
-          switch(cat) {
-            case '景點': return 'bg-sky-500';
-            case '美食': return 'bg-amber-500';
-            case '住宿': return 'bg-indigo-500';
-            case '購物': return 'bg-emerald-500';
-            case '航班': return 'bg-slate-700';
-            default: return 'bg-slate-400';
-          }
-        };
-
-        // 拖曳排序初始化與銷毀控制
-        let sortableInstance = null;
-
-        const initSortable = () => {
-          nextTick(() => {
-            const el = document.getElementById('sortable-list');
-            if (el && window.sortable) {
-              sortableInstance = sortable(el, { 
-                handle: '.drag-handle', // 僅能透過把手拖曳
-                forcePlaceholderSize: true 
-              })[0];
-
-              // 拖曳結束更新陣列順序
-              sortableInstance.addEventListener('sortupdate', (e) => {
-                const newOrderIds = Array.from(el.querySelectorAll('.sortable-item')).map(item => item.dataset.id);
-                const currentDayItems = scheduleData.value[activeDayIdx.value];
-                
-                // 根據拖曳後的 ID 重新排序 Vue Data
-                const reordered = newOrderIds.map(id => currentDayItems.find(item => item.id === id)).filter(Boolean);
-                scheduleData.value[activeDayIdx.value] = reordered;
-              });
-            }
-          });
-        };
-
-        const destroySortable = () => {
-          const el = document.getElementById('sortable-list');
-          if (el && window.sortable) {
-            sortable(el, 'destroy');
-          }
-        };
-
-        return {
-          bannerImg, currentTab, activeDayIdx, filterCategory, isSortMode, toggleSortMode, authAction,
-          weather, exchange, calculatedTwd, days, scheduleData, currentFilteredItems, shoppingList, expenses, totalExpense,
-          showModal, isEditing, formItem, showShoppingModal, newShopping, showExpenseModal, newExpense,
-          handleFabClick, openEditModal, saveItem, confirmDelete, handleFileUpload, saveShoppingItem,
-          removeShoppingItem, saveExpenseItem, removeExpense, openNaver, getTransIcon, getCategoryBadgeClass
-        };
+        expenses: [
+          { category: '交通', name: '包車到機場', amount: 80000, payMethod: '現金', date: '2026-09-05' }
+        ]
       }
-    }).mount('#app');
-  </script>
+    },
+
+    computed: {
+      currentDayItinerary() {
+        let list = this.itineraryData[this.selectedDayIndex] || [];
+        if (this.filterCategory !== '全部') {
+          return list.filter(item => item.category === this.filterCategory);
+        }
+        return list;
+      },
+      calculatedTwd() {
+        if (!this.krwInput) return 0;
+        return Math.round(this.krwInput * 0.024);
+      },
+      totalExpenses() {
+        return this.expenses.reduce((sum, item) => sum + Number(item.amount), 0);
+      },
+      weatherIcon() {
+        return 'fa-solid fa-sun-cloud text-amber-300';
+      }
+    },
+
+    mounted() {
+      // 讀取本地快照資料
+      const localData = localStorage.getItem('busan_trip_data');
+      if (localData) {
+        try {
+          const parsed = JSON.parse(localData);
+          if (parsed.itineraryData) this.itineraryData = parsed.itineraryData;
+          if (parsed.shoppingList) this.shoppingList = parsed.shoppingList;
+          if (parsed.expenses) this.expenses = parsed.expenses;
+        } catch (e) {
+          console.error("無法載入本地儲存資料", e);
+        }
+      }
+      this.initSortable();
+    },
+
+    methods: {
+      saveLocalStorage() {
+        const data = {
+          itineraryData: this.itineraryData,
+          shoppingList: this.shoppingList,
+          expenses: this.expenses
+        };
+        localStorage.setItem('busan_trip_data', JSON.stringify(data));
+      },
+      getCategoryBadgeClass(cat) {
+        const map = {
+          '景點': 'bg-emerald-100 text-emerald-700',
+          '美食': 'bg-orange-100 text-orange-700',
+          '住宿': 'bg-purple-100 text-purple-700',
+          '購物': 'bg-pink-100 text-pink-700',
+          '航班': 'bg-blue-100 text-blue-700',
+          '其他': 'bg-gray-100 text-gray-700'
+        };
+        return map[cat] || 'bg-gray-100 text-gray-700';
+      },
+      getTransIcon(type) {
+        if (type === 'car') return 'fa-solid fa-car';
+        if (type === 'transit') return 'fa-solid fa-bus';
+        return 'fa-solid fa-person-walking';
+      },
+      getTransText(idx) {
+        if (this.selectedDayIndex === 0 && idx === 0) return '第一天行程';
+        if (idx === 0) return '從民宿出發 約 20~40 分鐘';
+        return '預估車行/步行約 15~30 分鐘';
+      },
+      openAddModal() {
+        this.isEditMode = false;
+        this.modalItem = { id: Date.now(), category: '景點', title: '', time: '', address: '', openHours: '', ticket: '', note: '', naverUrl: '', transType: 'car' };
+        this.showItineraryModal = true;
+      },
+      openEditModal(item) {
+        this.isEditMode = true;
+        this.modalItem = JSON.parse(JSON.stringify(item));
+        this.showItineraryModal = true;
+      },
+      saveItinerary() {
+        if (this.isEditMode) {
+          const list = this.itineraryData[this.selectedDayIndex];
+          const index = list.findIndex(i => i.id === this.modalItem.id);
+          if (index !== -1) list.splice(index, 1, this.modalItem);
+        } else {
+          this.itineraryData[this.selectedDayIndex].push(this.modalItem);
+        }
+        this.showItineraryModal = false;
+        this.saveLocalStorage();
+      },
+      confirmDeleteItinerary() {
+        if (confirm('確定要刪除此行程嗎？')) {
+          const list = this.itineraryData[this.selectedDayIndex];
+          this.itineraryData[this.selectedDayIndex] = list.filter(i => i.id !== this.modalItem.id);
+          this.showItineraryModal = false;
+          this.saveLocalStorage();
+        }
+      },
+      handleImageUpload(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            this.newShopping.image = event.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      },
+      addShoppingItem() {
+        if (!this.newShopping.name) return;
+        this.shoppingList.push({ ...this.newShopping });
+        this.newShopping = { name: '', image: '' };
+        this.showShoppingModal = false;
+        this.saveLocalStorage();
+      },
+      deleteShoppingItem(idx) {
+        if (confirm('確定刪除此購物項目？')) {
+          this.shoppingList.splice(idx, 1);
+          this.saveLocalStorage();
+        }
+      },
+      addExpense() {
+        if (!this.newExpense.name || !this.newExpense.amount) return;
+        this.expenses.push({ ...this.newExpense });
+        this.newExpense = { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0] };
+        this.showExpenseModal = false;
+        this.saveLocalStorage();
+      },
+      deleteExpense(idx) {
+        if (confirm('確定刪除此花費紀錄？')) {
+          this.expenses.splice(idx, 1);
+          this.saveLocalStorage();
+        }
+      },
+      initSortable() {
+        this.$nextTick(() => {
+          const el = document.getElementById('itinerary-list');
+          if (el) {
+            new Sortable(el, {
+              animation: 150,
+              delay: 200,
+              delayOnTouchOnly: true,
+              onEnd: (evt) => {
+                const list = this.itineraryData[this.selectedDayIndex];
+                const movedItem = list.splice(evt.oldIndex, 1)[0];
+                list.splice(evt.newIndex, 0, movedItem);
+                this.saveLocalStorage();
+              }
+            });
+          }
+        });
+      }
+    }
+  }).mount('#app');
+</script>
+
 </body>
 </html>
