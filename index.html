@@ -346,34 +346,69 @@
       </div>
     </div>
 
-    <!-- 3. 購物清單頁面 (升級：加入地點與備註顯示) -->
-    <div v-if="currentTab === 'shopping'">
-      <div class="grid grid-cols-2 gap-3">
-        <div v-for="(item, idx) in shoppingList" :key="idx" class="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 relative group flex flex-col justify-between">
-          <div>
-            <div class="w-full h-32 bg-gray-100 rounded-xl overflow-hidden mb-2 relative">
-              <img :src="item.image || 'https://via.placeholder.com/150?text=No+Image'" class="w-full h-full object-cover">
-            </div>
-            <h4 class="font-bold text-xs text-gray-800 line-clamp-2">{{ item.name }}</h4>
+    <!-- 3. 購物清單頁面 (全新升級：按地點分類、已購買 Checkbox、快捷標籤) -->
+    <div v-if="currentTab === 'shopping'" class="space-y-4">
+      
+      <!-- 清單為空時的提示 -->
+      <div v-if="Object.keys(groupedShoppingList).length === 0" class="text-center py-10 text-gray-400 text-xs">
+        目前沒有購物項目，點擊右下角「+」新增！
+      </div>
+
+      <!-- 依地點分組渲染區塊 -->
+      <div v-for="(items, locationName) in groupedShoppingList" :key="locationName" class="space-y-2">
+        
+        <!-- 地點標頭 -->
+        <div class="flex items-center justify-between px-1">
+          <div class="flex items-center space-x-1.5 text-xs font-bold text-ocean-dark">
+            <i class="fa-solid fa-store"></i>
+            <span>{{ locationName }}</span>
+            <span class="bg-ocean-light text-ocean-dark px-2 py-0.5 rounded-full text-[10px]">
+              {{ items.length }} 項
+            </span>
+          </div>
+        </div>
+
+        <!-- 該地點下的商品網格 (2欄) -->
+        <div class="grid grid-cols-2 gap-3">
+          <div v-for="item in items" :key="item.originalIndex" 
+               :class="item.isBought ? 'bg-gray-50/80 opacity-70 border-gray-200' : 'bg-white border-gray-100'"
+               class="rounded-2xl p-3 shadow-sm border relative group flex flex-col justify-between transition-all">
             
-            <!-- 新增：顯示購買地點與備註 -->
-            <div class="mt-1.5 space-y-1">
-              <div v-if="item.location" class="text-[10px] text-ocean-dark bg-ocean-light/60 px-2 py-0.5 rounded-md font-medium inline-block line-clamp-1">
-                <i class="fa-solid fa-store mr-1"></i>{{ item.location }}
+            <div>
+              <!-- 商品圖片區塊 -->
+              <div class="w-full h-28 bg-gray-100 rounded-xl overflow-hidden mb-2 relative">
+                <img :src="item.image || 'https://via.placeholder.com/150?text=No+Image'" class="w-full h-full object-cover">
+                
+                <!-- 已購買完成勾選標籤/方塊 -->
+                <button @click="toggleBought(item.originalIndex)" 
+                        :class="item.isBought ? 'bg-emerald-500 text-white' : 'bg-black/40 text-white hover:bg-black/60'"
+                        class="absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center text-xs transition-colors z-10 shadow-md">
+                  <i class="fa-solid fa-check"></i>
+                </button>
               </div>
-              <div v-if="item.note" class="text-[10px] text-gray-500 line-clamp-2 bg-gray-50 p-1.5 rounded-lg border border-gray-100">
+
+              <!-- 商品名稱 (若已購買則加上刪除線) -->
+              <h4 class="font-bold text-xs text-gray-800 line-clamp-2" :class="item.isBought ? 'line-through text-gray-400' : ''">
+                {{ item.name }}
+              </h4>
+              
+              <!-- 備註說明 -->
+              <div v-if="item.note" class="mt-1 text-[10px] text-gray-500 line-clamp-2 bg-gray-50 p-1.5 rounded-lg border border-gray-100">
                 <i class="fa-regular fa-sticky-note mr-1 text-gray-400"></i>{{ item.note }}
               </div>
             </div>
+            
+            <!-- 刪除按鈕 (按鈕帶有防誤觸確認) -->
+            <button @click="deleteShoppingItem(item.originalIndex)" class="absolute top-2 right-2 bg-black/50 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center z-10 hover:bg-red-500 transition-colors">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
           </div>
-          
-          <button @click="deleteShoppingItem(idx)" class="absolute top-2 right-2 bg-black/50 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
         </div>
+
       </div>
 
-      <button @click="showShoppingModal = true" class="fixed bottom-6 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30">
+      <!-- 新增購物 Floating Button -->
+      <button @click="showShoppingModal = true" class="fixed bottom-6 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30 hover:scale-105 active:scale-95 transition-transform">
         <i class="fa-solid fa-plus"></i>
       </button>
     </div>
@@ -471,7 +506,7 @@
     </div>
   </div>
 
-  <!-- Modal 2: 新增購物清單 (升級：加入地點與備註輸入框) -->
+  <!-- Modal 2: 新增購物清單 (加入快捷地點標籤) -->
   <div v-if="showShoppingModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-sm rounded-3xl p-5 space-y-3">
       <h3 class="font-bold text-base text-gray-800">新增購物想買清單</h3>
@@ -483,7 +518,17 @@
 
       <div>
         <label class="text-xs text-gray-500 block mb-1">購買地點</label>
-        <input type="text" v-model="newShopping.location" placeholder="例如: 樂天超市 / Olive Young / 國際市場" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+        <input type="text" v-model="newShopping.location" placeholder="輸入或選擇下方快捷標籤" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none mb-1.5">
+        
+        <!-- 快捷地點標籤列 -->
+        <div class="flex flex-wrap gap-1">
+          <button v-for="tag in quickLocations" :key="tag" 
+                  @click="newShopping.location = tag"
+                  type="button" 
+                  class="bg-ocean-light text-ocean-dark hover:bg-ocean hover:text-white text-[10px] px-2 py-1 rounded-md transition-colors">
+            + {{ tag }}
+          </button>
+        </div>
       </div>
 
       <div>
@@ -547,7 +592,8 @@
         isSortMode: false,
         sortableInstance: null,
         modalItem: {},
-        newShopping: { name: '', location: '', note: '', image: '' },
+        newShopping: { name: '', location: '', note: '', image: '', isBought: false },
+        quickLocations: ['樂天超市', 'Olive Young', '國際市場', '大創', '免稅店', '便利商店'],
         newExpense: { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0] },
 
         weather: { temp: 26, desc: '多雲晴朗', pop: 10, wind: 2.1 },
@@ -607,7 +653,7 @@
         },
 
         shoppingList: [
-          { name: '韓國棉被 (永一寢具)', location: '國際市場', note: '四季被 / 單人或雙人床用', image: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=500' }
+          { name: '韓國棉被 (永一寢具)', location: '國際市場', note: '四季被 / 單人或雙人床用', image: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=500', isBought: false }
         ],
 
         expenses: [
@@ -623,6 +669,24 @@
           return list.filter(item => item.category === this.filterCategory);
         }
         return list;
+      },
+      // 自動依照購買地點分組，並優先將未購買項目擺在前面
+      groupedShoppingList() {
+        const groups = {};
+        this.shoppingList.forEach((item, originalIndex) => {
+          const loc = item.location && item.location.trim() ? item.location.trim() : '其他 / 未指定地點';
+          if (!groups[loc]) {
+            groups[loc] = [];
+          }
+          groups[loc].push({ ...item, originalIndex });
+        });
+
+        // 針對每個地點的清單進行排序：未購買(false)排前面，已購買(true)排後面
+        Object.keys(groups).forEach(loc => {
+          groups[loc].sort((a, b) => (a.isBought === b.isBought ? 0 : a.isBought ? 1 : -1));
+        });
+
+        return groups;
       },
       calculatedTwd() {
         if (!this.krwInput) return 0;
@@ -652,7 +716,6 @@
     },
 
     methods: {
-      // 密碼驗證方法 (868)
       checkPassword() {
         const pwd = prompt('請輸入管理密碼：');
         if (pwd === '868') {
@@ -742,8 +805,13 @@
       addShoppingItem() {
         if (!this.newShopping.name) return;
         this.shoppingList.push({ ...this.newShopping });
-        this.newShopping = { name: '', location: '', note: '', image: '' };
+        this.newShopping = { name: '', location: '', note: '', image: '', isBought: false };
         this.showShoppingModal = false;
+        this.saveLocalStorage();
+      },
+      // 切換已購買狀態
+      toggleBought(originalIdx) {
+        this.shoppingList[originalIdx].isBought = !this.shoppingList[originalIdx].isBought;
         this.saveLocalStorage();
       },
       deleteShoppingItem(idx) {
