@@ -55,7 +55,7 @@
     <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40"></div>
   </div>
 
-  <!-- 頁籤選單區塊：改為獨立放置於 Banner 下方外側，不遮擋照片 -->
+  <!-- 頁籤選單區塊：獨立放置於 Banner 下方外側，不遮擋照片 -->
   <div class="flex justify-end px-4 -mt-6 z-20">
     <div class="flex space-x-2 bg-white/90 backdrop-blur-md p-1.5 rounded-full shadow-lg border border-white/50">
       <button @click="currentTab = 'itinerary'" :class="currentTab === 'itinerary' ? 'bg-ocean-dark text-white' : 'text-gray-600'" class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200">
@@ -125,7 +125,7 @@
         </div>
       </div>
 
-      <!-- 行程清單 (已取消交通時間顯示) -->
+      <!-- 行程清單 -->
       <div id="itinerary-list" class="space-y-3">
         <div v-for="(item, idx) in currentDayItinerary" :key="item.id" :data-id="item.id" class="group relative">
 
@@ -229,14 +229,13 @@
         <div class="text-[10px] text-gray-400 mt-2 text-right">* 預設匯率基準: 1 TWD ≈ 42 KRW (約乘 0.024)</div>
       </div>
 
-      <!-- 新增：行前須知卡片 -->
+      <!-- 行前須知卡片 -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3">
         <h3 class="font-bold text-gray-800 text-sm flex items-center text-amber-600">
           <i class="fa-solid fa-triangle-exclamation mr-2 text-amber-500"></i>行前須知
         </h3>
         
         <div class="space-y-2 text-xs text-gray-700 leading-relaxed">
-          <!-- 1. 隨身行李規定 -->
           <div class="bg-amber-50/60 p-3 rounded-xl border border-amber-100/80 space-y-1">
             <div class="font-bold text-amber-800 flex items-center">
               <i class="fa-solid fa-suitcase-rolling mr-1.5"></i>1. 隨身行李規定：
@@ -249,7 +248,6 @@
             </p>
           </div>
 
-          <!-- 2. 藥品禁令 -->
           <div class="bg-red-50/60 p-3 rounded-xl border border-red-100/80 space-y-1">
             <div class="font-bold text-red-800 flex items-center">
               <i class="fa-solid fa-capsules mr-1.5"></i>2. 藥品限制：
@@ -259,7 +257,6 @@
             </p>
           </div>
 
-          <!-- 3. 電壓插頭 -->
           <div class="bg-blue-50/60 p-3 rounded-xl border border-blue-100/80">
             <div class="font-bold text-blue-800 flex items-center">
               <i class="fa-solid fa-plug mr-1.5"></i>3. 電壓插頭：
@@ -269,7 +266,6 @@
             </p>
           </div>
 
-          <!-- 4. App 準備 -->
           <div class="bg-emerald-50/60 p-3 rounded-xl border border-emerald-100/80">
             <div class="font-bold text-emerald-800 flex items-center">
               <i class="fa-solid fa-mobile-screen-button mr-1.5"></i>4. App 下載與註冊：
@@ -279,7 +275,6 @@
             </p>
           </div>
 
-          <!-- 5. 信用卡 -->
           <div class="bg-purple-50/60 p-3 rounded-xl border border-purple-100/80">
             <div class="font-bold text-purple-800 flex items-center">
               <i class="fa-regular fa-credit-card mr-1.5"></i>5. 信用卡準備：
@@ -289,7 +284,6 @@
             </p>
           </div>
 
-          <!-- 6. 穿著提醒 -->
           <div class="bg-sky-50/60 p-3 rounded-xl border border-sky-100/80">
             <div class="font-bold text-sky-800 flex items-center">
               <i class="fa-solid fa-shirt mr-1.5"></i>6. 衣物穿著：
@@ -352,7 +346,7 @@
       </div>
     </div>
 
-    <!-- 3. 購物清單頁面 -->
+    <!-- 3. 購物清單頁面 (升級：加入地點與備註顯示) -->
     <div v-if="currentTab === 'shopping'">
       <div class="grid grid-cols-2 gap-3">
         <div v-for="(item, idx) in shoppingList" :key="idx" class="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 relative group flex flex-col justify-between">
@@ -361,7 +355,18 @@
               <img :src="item.image || 'https://via.placeholder.com/150?text=No+Image'" class="w-full h-full object-cover">
             </div>
             <h4 class="font-bold text-xs text-gray-800 line-clamp-2">{{ item.name }}</h4>
+            
+            <!-- 新增：顯示購買地點與備註 -->
+            <div class="mt-1.5 space-y-1">
+              <div v-if="item.location" class="text-[10px] text-ocean-dark bg-ocean-light/60 px-2 py-0.5 rounded-md font-medium inline-block line-clamp-1">
+                <i class="fa-solid fa-store mr-1"></i>{{ item.location }}
+              </div>
+              <div v-if="item.note" class="text-[10px] text-gray-500 line-clamp-2 bg-gray-50 p-1.5 rounded-lg border border-gray-100">
+                <i class="fa-regular fa-sticky-note mr-1 text-gray-400"></i>{{ item.note }}
+              </div>
+            </div>
           </div>
+          
           <button @click="deleteShoppingItem(idx)" class="absolute top-2 right-2 bg-black/50 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center">
             <i class="fa-solid fa-xmark"></i>
           </button>
@@ -466,15 +471,31 @@
     </div>
   </div>
 
-  <!-- Modal 2: 新增購物清單 -->
+  <!-- Modal 2: 新增購物清單 (升級：加入地點與備註輸入框) -->
   <div v-if="showShoppingModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-sm rounded-3xl p-5 space-y-3">
       <h3 class="font-bold text-base text-gray-800">新增購物想買清單</h3>
-      <input type="text" v-model="newShopping.name" placeholder="商品名稱" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      
+      <div>
+        <label class="text-xs text-gray-500 block mb-1">商品名稱</label>
+        <input type="text" v-model="newShopping.name" placeholder="例如: 零食 / 保養品" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      </div>
+
+      <div>
+        <label class="text-xs text-gray-500 block mb-1">購買地點</label>
+        <input type="text" v-model="newShopping.location" placeholder="例如: 樂天超市 / Olive Young / 國際市場" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      </div>
+
+      <div>
+        <label class="text-xs text-gray-500 block mb-1">備註 / 規格</label>
+        <textarea v-model="newShopping.note" placeholder="例如: 幫朋友買2盒、色號#21..." class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none h-16"></textarea>
+      </div>
+
       <div>
         <label class="text-xs text-gray-500 block mb-1">上傳圖片</label>
         <input type="file" @change="handleImageUpload" accept="image/*" class="text-xs text-gray-500">
       </div>
+
       <div class="flex space-x-2 pt-2">
         <button @click="showShoppingModal = false" class="flex-1 bg-gray-100 text-gray-600 rounded-xl py-2.5 text-xs font-bold">取消</button>
         <button @click="addShoppingItem" class="flex-1 bg-ocean-dark text-white rounded-xl py-2.5 text-xs font-bold">加入</button>
@@ -526,7 +547,7 @@
         isSortMode: false,
         sortableInstance: null,
         modalItem: {},
-        newShopping: { name: '', image: '' },
+        newShopping: { name: '', location: '', note: '', image: '' },
         newExpense: { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0] },
 
         weather: { temp: 26, desc: '多雲晴朗', pop: 10, wind: 2.1 },
@@ -586,7 +607,7 @@
         },
 
         shoppingList: [
-          { name: '韓國棉被 (永一寢具)', image: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=500' }
+          { name: '韓國棉被 (永一寢具)', location: '國際市場', note: '四季被 / 單人或雙人床用', image: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=500' }
         ],
 
         expenses: [
@@ -642,7 +663,6 @@
         }
       },
 
-      // 帶有密碼驗證的新增/編輯觸發
       openAddModalWithAuth() {
         if (this.checkPassword()) {
           this.isEditMode = false;
@@ -658,7 +678,6 @@
         }
       },
 
-      // 排序模式切換 (鎖定/解鎖)
       toggleSortMode() {
         if (!this.isSortMode) {
           if (this.checkPassword()) {
@@ -723,7 +742,7 @@
       addShoppingItem() {
         if (!this.newShopping.name) return;
         this.shoppingList.push({ ...this.newShopping });
-        this.newShopping = { name: '', image: '' };
+        this.newShopping = { name: '', location: '', note: '', image: '' };
         this.showShoppingModal = false;
         this.saveLocalStorage();
       },
@@ -752,8 +771,8 @@
           if (el) {
             this.sortableInstance = new Sortable(el, {
               animation: 150,
-              handle: '.drag-handle', // 僅限定從 Icon 握把拖曳
-              disabled: true, // 預設鎖定不可拖曳
+              handle: '.drag-handle',
+              disabled: true,
               onEnd: (evt) => {
                 const list = this.itineraryData[this.selectedDayIndex];
                 const movedItem = list.splice(evt.oldIndex, 1)[0];
