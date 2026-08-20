@@ -217,13 +217,11 @@
           <!-- 1. 交通時間卡片 (僅顯示在行程與行程之間，且非排序模式下) -->
           <div v-if="idx < currentDayItinerary.length - 1 && !isSortMode" class="flex items-center justify-center py-1">
             <div class="flex items-center space-x-2 bg-white/80 border border-gray-200 px-3 py-1.5 rounded-full text-xs text-gray-600 shadow-sm">
-              <!-- 切換交通工具選單 (需要密碼 868) -->
               <button @click="changeTransitMode(item)" class="flex items-center space-x-1 font-semibold text-ocean-dark hover:opacity-80">
                 <i :class="getTransitIcon(item.transitMode)"></i>
                 <span>{{ item.transitMode || '計程車' }}</span>
               </button>
               <span class="text-gray-300">|</span>
-              <!-- 修改交通所需時間 (需要密碼 868) -->
               <button @click="editTransitTime(item)" class="flex items-center space-x-1 hover:text-ocean-dark">
                 <span>{{ item.transitTime || '15' }} 分鐘</span>
                 <i class="fa-solid fa-pen text-[10px] text-gray-400"></i>
@@ -242,6 +240,60 @@
 
     <!-- 2. 資訊頁面 -->
     <div v-if="currentTab === 'info'" class="space-y-5">
+      
+      <!-- 住宿資訊 -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3">
+        <h3 class="font-bold text-gray-800 text-sm flex items-center text-ocean-dark">
+          <i class="fa-solid fa-bed mr-2"></i>住宿資訊
+        </h3>
+        
+        <div class="space-y-3 text-xs">
+          <!-- 廣安里民宿 -->
+          <div class="bg-ocean-light/40 p-3 rounded-xl border border-ocean/20 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-ocean-deep text-sm">廣安里民宿</span>
+              <span class="bg-ocean-dark text-white text-[10px] px-2 py-0.5 rounded-full font-medium">8/31 ~ 9/1 (兩晚)</span>
+            </div>
+            
+            <div @click="copyToClipboard('부산 수영구 민락수변로 49')" 
+                 class="flex items-center space-x-1.5 text-gray-700 bg-white p-2 rounded-lg cursor-pointer hover:bg-gray-50 border border-gray-100 group/addr">
+              <i class="fa-solid fa-location-dot text-ocean-dark"></i>
+              <span class="font-medium flex-1">부산 수영구 민락수변로 49</span>
+              <i class="fa-regular fa-copy text-[10px] text-gray-400 group-hover/addr:text-ocean-dark"></i>
+            </div>
+
+            <div class="flex justify-end">
+              <a href="https://naver.me/5UVeuY2u" target="_blank" class="inline-flex items-center space-x-1 text-[#03C75A] font-bold text-[11px] hover:underline">
+                <i class="fa-solid fa-map-location-dot"></i>
+                <span>NAVER 地圖查看</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 海雲台民宿 -->
+          <div class="bg-ocean-light/40 p-3 rounded-xl border border-ocean/20 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-ocean-deep text-sm">海雲台民宿</span>
+              <span class="bg-ocean-dark text-white text-[10px] px-2 py-0.5 rounded-full font-medium">9/2 ~ 9/4 (三晚)</span>
+            </div>
+            
+            <div @click="copyToClipboard('부산시 해운대해변로 298번길 29, 해운대 푸르지오시티')" 
+                 class="flex items-center space-x-1.5 text-gray-700 bg-white p-2 rounded-lg cursor-pointer hover:bg-gray-50 border border-gray-100 group/addr">
+              <i class="fa-solid fa-location-dot text-ocean-dark"></i>
+              <span class="font-medium flex-1">부산시 해운대해변로 298번길 29, 해운대 푸르지오시티</span>
+              <i class="fa-regular fa-copy text-[10px] text-gray-400 group-hover/addr:text-ocean-dark"></i>
+            </div>
+
+            <div class="flex justify-end">
+              <a href="https://naver.me/5nh1UWce" target="_blank" class="inline-flex items-center space-x-1 text-[#03C75A] font-bold text-[11px] hover:underline">
+                <i class="fa-solid fa-map-location-dot"></i>
+                <span>NAVER 地圖查看</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- 匯率換算 -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
         <h3 class="font-bold text-gray-800 text-sm mb-3 flex items-center">
@@ -274,9 +326,14 @@
             <div class="font-bold text-amber-800 flex items-center">
               <i class="fa-solid fa-suitcase-rolling mr-1.5"></i>1. 隨身行李規定：
             </div>
-            <p class="text-gray-600 pl-2">
-              <span class="text-red-500 font-bold">＊</span>行動電源、替換電池、電子煙<span class="font-semibold text-gray-800">不能放托運行李</span>，每人最多可帶2個行動電源。<span class="text-red-500 font-bold">飛機上全程禁用!!</span> 需有 Wh 標示!! (100Wh以下)
-            </p>
+            <div class="text-gray-600 pl-2 space-y-1">
+              <p>
+                <span class="text-red-500 font-bold">＊</span>行動電源、替換電池、電子煙<span class="font-semibold text-gray-800">不能放托運行李</span>，每人最多可帶2個行動電源 <span class="text-red-500 font-bold">飛機上全程禁用!!</span> 需有wh標示!!(100Wh以下)用透明夾鏈袋裝，貼絕緣膠帶在電源開關或充電口!!
+              </p>
+              <p>
+                <span class="text-red-500 font-bold">＊</span>水、飲料、食品、化妝品等液態•噴霧•凝膠體類（凝膠體或霜）每樣不超過100ml並用要透明夾鏈袋裝，每名旅客限帶1L
+              </p>
+            </div>
           </div>
 
           <div class="bg-red-50/60 p-3 rounded-xl border border-red-100/80 space-y-1">
@@ -535,7 +592,6 @@
 
       <div>
         <label class="text-xs text-gray-500">支付方式</label>
-
         <select v-model="newExpense.payMethod" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
           <option value="現金">現金</option>
           <option value="信用卡">信用卡</option>
