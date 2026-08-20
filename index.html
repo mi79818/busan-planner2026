@@ -358,6 +358,7 @@
               <h4 class="font-bold text-xs text-gray-800 line-clamp-2" :class="item.isBought ? 'line-through text-gray-400' : ''">
                 {{ item.name }}
               </h4>
+              <div v-if="item.note" class="text-[10px] text-gray-400 mt-1 line-clamp-1">{{ item.note }}</div>
             </div>
             <button @click="deleteShoppingItem(item.originalIndex)" class="absolute top-2 right-2 bg-black/50 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center z-10 hover:bg-red-500 transition-colors">
               <i class="fa-solid fa-xmark"></i>
@@ -377,6 +378,10 @@
         <span class="text-xs opacity-80">累積總花費</span>
         <div class="text-3xl font-extrabold mt-1">₩ {{ totalExpenses.toLocaleString() }}</div>
         <div class="text-xs opacity-80 mt-1">約合 NT$ {{ Math.round(totalExpenses * 0.024).toLocaleString() }}</div>
+      </div>
+
+      <div v-if="expenses.length === 0" class="text-center py-10 text-gray-400 text-xs">
+        目前沒有記帳項目，點擊右下角「+」新增！
       </div>
 
       <div class="space-y-2">
@@ -460,6 +465,93 @@
         <button v-if="isEditMode" @click="confirmDeleteItinerary" class="flex-1 bg-red-100 text-red-600 rounded-xl py-3 text-xs font-bold">刪除</button>
         <button @click="showItineraryModal = false" class="flex-1 bg-gray-100 text-gray-600 rounded-xl py-3 text-xs font-bold">取消</button>
         <button @click="saveItinerary" class="flex-1 bg-ocean-dark text-white rounded-xl py-3 text-xs font-bold">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: 新增購物項目 -->
+  <div v-if="showShoppingModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-3">
+      <h3 class="font-bold text-base text-gray-800 mb-2">新增購物欲買清單</h3>
+
+      <div>
+        <label class="text-xs text-gray-500">商品名稱 *</label>
+        <input type="text" v-model="newShopping.name" placeholder="例如: 零甘草泡麵 / 護手霜" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      </div>
+
+      <div>
+        <label class="text-xs text-gray-500">購買地點 / 地點快捷標籤</label>
+        <input type="text" v-model="newShopping.location" placeholder="例如: Olive Young" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none mb-2">
+        <div class="flex flex-wrap gap-1.5">
+          <button v-for="loc in quickLocations" :key="loc" @click="newShopping.location = loc" class="text-[10px] bg-ocean-light text-ocean-dark font-medium px-2.5 py-1 rounded-lg">
+            {{ loc }}
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <label class="text-xs text-gray-500">圖片網址 (選填)</label>
+        <input type="text" v-model="newShopping.image" placeholder="https://..." class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      </div>
+
+      <div>
+        <label class="text-xs text-gray-500">備註 (選填)</label>
+        <input type="text" v-model="newShopping.note" placeholder="數量、色號等" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      </div>
+
+      <div class="flex space-x-2 pt-3">
+        <button @click="showShoppingModal = false" class="flex-1 bg-gray-100 text-gray-600 rounded-xl py-3 text-xs font-bold">取消</button>
+        <button @click="saveShoppingItem" class="flex-1 bg-ocean-dark text-white rounded-xl py-3 text-xs font-bold">新增</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: 新增花費記帳 -->
+  <div v-if="showExpenseModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-3">
+      <h3 class="font-bold text-base text-gray-800 mb-2">新增花費記帳</h3>
+
+      <div>
+        <label class="text-xs text-gray-500">類別</label>
+        <select v-model="newExpense.category" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+          <option value="飲食">飲食</option>
+          <option value="購物">購物</option>
+          <option value="交通">交通</option>
+          <option value="門票">門票</option>
+          <option value="住宿">住宿</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-xs text-gray-500">項目名稱 *</label>
+        <input type="text" v-model="newExpense.name" placeholder="例如: 豬肉湯飯 / 計程車" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      </div>
+
+      <div>
+        <label class="text-xs text-gray-500">金額 (韓元 KRW) *</label>
+        <input type="number" v-model="newExpense.amount" placeholder="例如: 15000" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      </div>
+
+      <div>
+        <label class="text-xs text-gray-500">支付方式</label>
+
+        <select v-model="newExpense.payMethod" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+          <option value="現金">現金</option>
+          <option value="信用卡">信用卡</option>
+          <option value="T-Money">T-Money</option>
+          <option value="WOWPASS">WOWPASS</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-xs text-gray-500">日期</label>
+        <input type="date" v-model="newExpense.date" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      </div>
+
+      <div class="flex space-x-2 pt-3">
+        <button @click="showExpenseModal = false" class="flex-1 bg-gray-100 text-gray-600 rounded-xl py-3 text-xs font-bold">取消</button>
+        <button @click="saveExpenseItem" class="flex-1 bg-ocean-dark text-white rounded-xl py-3 text-xs font-bold">儲存</button>
       </div>
     </div>
   </div>
@@ -686,6 +778,17 @@
         }
       },
 
+      // 儲存購物項目
+      saveShoppingItem() {
+        if (!this.newShopping.name) {
+          alert('請輸入商品名稱！');
+          return;
+        }
+        this.shoppingList.push({ ...this.newShopping });
+        this.newShopping = { name: '', location: '', note: '', image: '', isBought: false };
+        this.showShoppingModal = false;
+      },
+
       // 購物清單相關方法
       toggleBought(idx) {
         this.shoppingList[idx].isBought = !this.shoppingList[idx].isBought;
@@ -693,6 +796,18 @@
       deleteShoppingItem(idx) {
         this.shoppingList.splice(idx, 1);
       },
+
+      // 儲存花費記帳
+      saveExpenseItem() {
+        if (!this.newExpense.name || !this.newExpense.amount) {
+          alert('請輸入名稱與金額！');
+          return;
+        }
+        this.expenses.push({ ...this.newExpense });
+        this.newExpense = { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0] };
+        this.showExpenseModal = false;
+      },
+
       deleteExpense(idx) {
         this.expenses.splice(idx, 1);
       }
