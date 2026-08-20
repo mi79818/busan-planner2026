@@ -346,7 +346,7 @@
       </div>
     </div>
 
-    <!-- 3. 購物清單頁面 (全新升級：按地點分類、已購買 Checkbox、快捷標籤) -->
+    <!-- 3. 購物清單頁面 -->
     <div v-if="currentTab === 'shopping'" class="space-y-4">
       
       <!-- 清單為空時的提示 -->
@@ -398,7 +398,7 @@
               </div>
             </div>
             
-            <!-- 刪除按鈕 (按鈕帶有防誤觸確認) -->
+            <!-- 刪除按鈕 -->
             <button @click="deleteShoppingItem(item.originalIndex)" class="absolute top-2 right-2 bg-black/50 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center z-10 hover:bg-red-500 transition-colors">
               <i class="fa-solid fa-xmark"></i>
             </button>
@@ -506,7 +506,7 @@
     </div>
   </div>
 
-  <!-- Modal 2: 新增購物清單 (加入快捷地點標籤) -->
+  <!-- Modal 2: 新增購物清單 -->
   <div v-if="showShoppingModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-sm rounded-3xl p-5 space-y-3">
       <h3 class="font-bold text-base text-gray-800">新增購物想買清單</h3>
@@ -592,6 +592,8 @@
         isSortMode: false,
         sortableInstance: null,
         modalItem: {},
+        shoppingList: [],
+        expenses: [],
         newShopping: { name: '', location: '', note: '', image: '', isBought: false },
         quickLocations: ['樂天超市', 'Olive Young', '國際市場', '大創', '免稅店', '便利商店'],
         newExpense: { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0] },
@@ -610,7 +612,7 @@
         itineraryData: {
           0: [
             { id: 101, category: '航班', title: '台北(桃園) ➔ 釜山', time: '13:30~17:05', flightNo: 'BX 794', depCode: 'TPE', depTime: '13:30', arrCode: 'PUS', arrTime: '17:05', duration: '2h 35m' },
-            { id: 102, category: '其他', title: '機場包車及領取物資', time: '18:30~19:00', note: '活動區拿禮物、LG U+ SIM卡(Gate 2/3中間)、領釜山Pass、辦SES快速通關' },
+            { id: 102, category: '其他', title: '領取物資', time: '18:30~19:00', note: '活動區拿禮物、LG U+ SIM卡(Gate 2/3中間)、領釜山Pass、辦SES快速通關' },
             { id: 103, category: '住宿', title: '廣安里民宿放行李', time: '19:00~20:00', address: '부산 수영구 민락수변로 49', naverUrl: 'https://naver.me/5UVeuY2u' },
             { id: 104, category: '美食', title: '고결 稻草烤牛肋排', time: '20:00~22:00', openHours: '16:00~24:00', address: '부산 수영구 광안해변로255번길 50 1~2층', naverUrl: 'https://naver.me/xqbUlk43' },
             { id: 105, category: '購物', title: 'CU超商買隔天早餐', time: '22:00~' }
@@ -618,179 +620,126 @@
           1: [
             { id: 201, category: '景點', title: '松島纜車 (송도 베이스테이션)', time: '10:10~12:00', openHours: '09:00~22:00', address: '부산 서구 송도해변로 171', naverUrl: 'https://naver.me/FvTJ9azl' },
             { id: 202, category: '美食', title: '太宗台炒瑪麵 (태종대짬뽕)', time: '12:30~14:00', openHours: '09:30~21:30', address: '부산 영도구 태종로 805 태짬', naverUrl: 'https://naver.me/5MvcLg2O' },
-            { id: 203, category: '景點', title: '白淺灘文化村 (Having moment咖啡店)', time: '14:00~16:00', address: '부산 영도구 절영로 196 해빙모먼트', naverUrl: 'https://naver.me/GXFV1HpJ' },
-            { id: 204, category: '景點', title: '廣安里旅遊諮詢處', time: '17:00~20:00', naverUrl: 'https://naver.me/xzxmTb5m' },
-            { id: 205, category: '美食', title: '이낙에산다 章腸蝦鍋', time: '18:00~20:00', address: '부산 수영구 남천바다로10번길 68 1층', naverUrl: 'https://naver.me/xSBoXG2G' },
-            { id: 206, category: '景點', title: '荒嶺山夜景 或 廣安里海邊', time: '20:00~', address: '부산 부산진구 전포동 산50-18', naverUrl: 'https://naver.me/xNpbw4Xw' },
-            { id: 207, category: '美食', title: '居酒屋(맹구포차) 或 PURADAK炸雞', time: '22:00~', note: '炸雞推薦:黑蒜/烤玉米起司/墨西哥辣椒', naverUrl: 'https://naver.me/Fz8CYxyt' }
+            { id: 203, category: '景點', title: '白淺灘文化村 (Having moment咖啡店)', time: '14:00~16:00', address: '부산 영도구 절영로 196 해빙모먼트', naverUrl: 'https://naver.me/GXFV1HpJ' }
           ],
-          2: [
-            { id: 301, category: '景點', title: '甘川洞文化村 & ibgogage韓服體驗', time: '09:30~12:00', address: '부산 사하구 감내2로 180-1 입고가게', naverUrl: 'https://naver.me/IItc6HR9' },
-            { id: 302, category: '美食', title: '富平罐頭市場 - 名品韓牛', time: '12:00~15:00', openHours: '11:00~21:30', address: '부산 중구 중구로43번길 42', naverUrl: 'https://naver.me/x4FLdDfi' },
-            { id: 303, category: '購物', title: '國際市場 (永一寢具買棉被)', time: '14:00~15:00', address: '부산 중구 중구로 36 국제시장 4공구 B동 1층', naverUrl: 'https://naver.me/513kXLnQ' },
-            { id: 304, category: '住宿', title: '海雲台民宿放行李', time: '15:30~16:15', address: '부산시 해운대해변로 298번길 29', naverUrl: 'https://naver.me/5nh1UWce' },
-            { id: 305, category: '景點', title: '海東龍宮寺', time: '17:00~18:00', openHours: '04:00~19:20', address: '부산 기장군 기장읍 용궁길 86', naverUrl: 'https://naver.me/58NdWaSm' },
-            { id: 306, category: '美食', title: '名品巨蟹 (기장명품대게)', time: '18:30~20:00', openHours: '10:00~21:00', address: '부산 기장군 기장읍 차성동로73번길 5', naverUrl: 'https://naver.me/FY3z1DKO' }
-          ],
-          3: [
-            { id: 401, category: '美食', title: '早餐：조선대가곰탕 牛骨湯', time: '09:30~11:00', openHours: '08:00~21:00', address: '부산 해운대구 달맞이길62번길 9-1', naverUrl: 'https://naver.me/xSBoXg2J' },
-            { id: 402, category: '景點', title: '膠囊列車 (尾浦站➔青沙浦站)', time: '11:30~12:00', address: '부산 해운대구 달맞이길62번길 17 1층', naverUrl: 'https://naver.me/5UVeuY8A' },
-            { id: 403, category: '美食', title: '午餐：青沙浦河粉', time: '13:00~15:00', openHours: '10:00~18:00', address: '부산 해운대구 청사포로128번길 6', naverUrl: 'https://naver.me/Fx2wpuxl' },
-            { id: 404, category: '景點', title: 'Skyline 滑坡列車', time: '15:30~17:00', openHours: '10:00~18:00', address: '부산 기장군 기장읍 기장해안로 205', naverUrl: 'https://naver.me/xtNI3jDH' },
-            { id: 405, category: '美食', title: '晚餐：烤鰻魚 (풍천만민물장어)', time: '18:30~20:00', openHours: '11:00~22:00', address: '부산 해운대구 달맞이길 22 1층', naverUrl: 'https://naver.me/xllYakSo' }
-          ],
-          4: [
-            { id: 501, category: '美食', title: '人參蔘雞湯 或 大海鮑魚粥', time: '09:30~11:00', naverUrl: 'https://naver.me/xNpbwa6l' },
-            { id: 502, category: '購物', title: '新世界百貨', time: '11:30~13:00', openHours: '10:30~20:30', address: '부산 해운대구 센텀남대로 35', naverUrl: 'https://naver.me/5XcVqz6G' },
-            { id: 503, category: '景點', title: 'SPA LAND 汗蒸幕', time: '13:00~19:00' },
-            { id: 504, category: '其他', title: '醫美行程 (女生)', time: '15:45~19:00', address: '부산 해운대구 센텀2로 19 센텀코아 2층', naverUrl: 'https://naver.me/GII4VFmz' },
-            { id: 505, category: '美食', title: '晚餐：豬肉米腸湯飯 或 迴轉壽司', time: '19:00~20:30', naverUrl: 'https://naver.me/5Vx0wBvl' }
-          ],
-          5: [
-            { id: 601, category: '其他', title: '包車前往金海機場 (₩80,000)', time: '10:30~11:30' },
-            { id: 602, category: '航班', title: '釜山 ➔ 台北(桃園)', time: '14:15~15:50', flightNo: 'BX 791', depCode: 'PUS', depTime: '14:15', arrCode: 'TPE', arrTime: '15:50', duration: '2h 35m' }
-          ]
-        },
-
-        shoppingList: [
-          { name: '韓國棉被 (永一寢具)', location: '國際市場', note: '四季被 / 單人或雙人床用', image: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=500', isBought: false }
-        ],
-
-        expenses: [
-          { category: '交通', name: '包車到機場', amount: 80000, payMethod: '現金', date: '2026-09-05' }
-        ]
+          2: [],
+          3: [],
+          4: [],
+          5: []
+        }
       }
     },
-
     computed: {
-      currentDayItinerary() {
-        let list = this.itineraryData[this.selectedDayIndex] || [];
-        if (this.filterCategory !== '全部') {
-          return list.filter(item => item.category === this.filterCategory);
-        }
-        return list;
-      },
-      // 自動依照購買地點分組，並優先將未購買項目擺在前面
-      groupedShoppingList() {
-        const groups = {};
-        this.shoppingList.forEach((item, originalIndex) => {
-          const loc = item.location && item.location.trim() ? item.location.trim() : '其他 / 未指定地點';
-          if (!groups[loc]) {
-            groups[loc] = [];
-          }
-          groups[loc].push({ ...item, originalIndex });
-        });
-
-        // 針對每個地點的清單進行排序：未購買(false)排前面，已購買(true)排後面
-        Object.keys(groups).forEach(loc => {
-          groups[loc].sort((a, b) => (a.isBought === b.isBought ? 0 : a.isBought ? 1 : -1));
-        });
-
-        return groups;
-      },
       calculatedTwd() {
         if (!this.krwInput) return 0;
         return Math.round(this.krwInput * 0.024);
       },
+      currentDayItinerary() {
+        const list = this.itineraryData[this.selectedDayIndex] || [];
+        if (this.filterCategory === '全部') {
+          return list;
+        }
+        return list.filter(item => item.category === this.filterCategory);
+      },
+      groupedShoppingList() {
+        const groups = {};
+        this.shoppingList.forEach((item, index) => {
+          const loc = item.location && item.location.trim() !== '' ? item.location : '其他 / 未分類';
+          if (!groups[loc]) {
+            groups[loc] = [];
+          }
+          groups[loc].push({ ...item, originalIndex: index });
+        });
+        return groups;
+      },
       totalExpenses() {
-        return this.expenses.reduce((sum, item) => sum + Number(item.amount), 0);
+        return this.expenses.reduce((sum, item) => sum + (Number(item.amount) || 0), 0);
       },
       weatherIcon() {
-        return 'fa-solid fa-sun-cloud text-amber-300';
+        return 'fa-solid fa-cloud-sun';
       }
     },
-
-    mounted() {
-      const localData = localStorage.getItem('busan_trip_data');
-      if (localData) {
-        try {
-          const parsed = JSON.parse(localData);
-          if (parsed.itineraryData) this.itineraryData = parsed.itineraryData;
-          if (parsed.shoppingList) this.shoppingList = parsed.shoppingList;
-          if (parsed.expenses) this.expenses = parsed.expenses;
-        } catch (e) {
-          console.error("無法載入本地儲存資料", e);
-        }
-      }
-      this.initSortable();
-    },
-
     methods: {
-      checkPassword() {
-        const pwd = prompt('請輸入管理密碼：');
-        if (pwd === '868') {
-          return true;
-        } else {
-          alert('密碼錯誤，無法執行操作！');
-          return false;
+      getCategoryBadgeClass(category) {
+        switch (category) {
+          case '景點': return 'bg-emerald-100 text-emerald-700';
+          case '美食': return 'bg-amber-100 text-amber-700';
+          case '住宿': return 'bg-indigo-100 text-indigo-700';
+          case '購物': return 'bg-pink-100 text-pink-700';
+          case '航班': return 'bg-blue-100 text-blue-700';
+          default: return 'bg-gray-100 text-gray-700';
         }
       },
-
       openAddModalWithAuth() {
-        if (this.checkPassword()) {
+        const pwd = prompt('請輸入編輯密碼：');
+        if (pwd === '868') {
           this.isEditMode = false;
           this.modalItem = { id: Date.now(), category: '景點', title: '', time: '', address: '', openHours: '', ticket: '', note: '', naverUrl: '' };
           this.showItineraryModal = true;
+        } else if (pwd !== null) {
+          alert('密碼錯誤！');
         }
       },
       openEditModalWithAuth(item) {
-        if (this.checkPassword()) {
+        const pwd = prompt('請輸入編輯密碼：');
+        if (pwd === '868') {
           this.isEditMode = true;
           this.modalItem = JSON.parse(JSON.stringify(item));
           this.showItineraryModal = true;
+        } else if (pwd !== null) {
+          alert('密碼錯誤！');
         }
-      },
-
-      toggleSortMode() {
-        if (!this.isSortMode) {
-          if (this.checkPassword()) {
-            this.isSortMode = true;
-            this.enableSortable(true);
-          }
-        } else {
-          this.isSortMode = false;
-          this.enableSortable(false);
-          this.saveLocalStorage();
-        }
-      },
-
-      saveLocalStorage() {
-        const data = {
-          itineraryData: this.itineraryData,
-          shoppingList: this.shoppingList,
-          expenses: this.expenses
-        };
-        localStorage.setItem('busan_trip_data', JSON.stringify(data));
-      },
-      getCategoryBadgeClass(cat) {
-        const map = {
-          '景點': 'bg-emerald-100 text-emerald-700',
-          '美食': 'bg-orange-100 text-orange-700',
-          '住宿': 'bg-purple-100 text-purple-700',
-          '購物': 'bg-pink-100 text-pink-700',
-          '航班': 'bg-blue-100 text-blue-700',
-          '其他': 'bg-gray-100 text-gray-700'
-        };
-        return map[cat] || 'bg-gray-100 text-gray-700';
       },
       saveItinerary() {
+        if (!this.modalItem.title) {
+          alert('請輸入行程名稱');
+          return;
+        }
+        const dayList = this.itineraryData[this.selectedDayIndex];
         if (this.isEditMode) {
-          const list = this.itineraryData[this.selectedDayIndex];
-          const index = list.findIndex(i => i.id === this.modalItem.id);
-          if (index !== -1) list.splice(index, 1, this.modalItem);
+          const idx = dayList.findIndex(i => i.id === this.modalItem.id);
+          if (idx !== -1) {
+            dayList[idx] = { ...this.modalItem };
+          }
         } else {
-          this.itineraryData[this.selectedDayIndex].push(this.modalItem);
+          dayList.push({ ...this.modalItem });
         }
         this.showItineraryModal = false;
-        this.saveLocalStorage();
       },
       confirmDeleteItinerary() {
         if (confirm('確定要刪除此行程嗎？')) {
-          const list = this.itineraryData[this.selectedDayIndex];
-          this.itineraryData[this.selectedDayIndex] = list.filter(i => i.id !== this.modalItem.id);
+          const dayList = this.itineraryData[this.selectedDayIndex];
+          const idx = dayList.findIndex(i => i.id === this.modalItem.id);
+          if (idx !== -1) {
+            dayList.splice(idx, 1);
+          }
           this.showItineraryModal = false;
-          this.saveLocalStorage();
         }
+      },
+      toggleSortMode() {
+        this.isSortMode = !this.isSortMode;
+        this.$nextTick(() => {
+          const el = document.getElementById('itinerary-list');
+          if (this.isSortMode) {
+            if (el) {
+              this.sortableInstance = new Sortable(el, {
+                handle: '.drag-handle',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                onEnd: (evt) => {
+                  const dayList = this.itineraryData[this.selectedDayIndex];
+                  const movedItem = dayList.splice(evt.oldIndex, 1)[0];
+                  dayList.splice(evt.newIndex, 0, movedItem);
+                }
+              });
+            }
+          } else {
+            if (this.sortableInstance) {
+              this.sortableInstance.destroy();
+              this.sortableInstance = null;
+            }
+          }
+        });
       },
       handleImageUpload(e) {
         const file = e.target.files[0];
@@ -803,62 +752,38 @@
         }
       },
       addShoppingItem() {
-        if (!this.newShopping.name) return;
+        if (!this.newShopping.name) {
+          alert('請輸入商品名稱');
+          return;
+        }
         this.shoppingList.push({ ...this.newShopping });
         this.newShopping = { name: '', location: '', note: '', image: '', isBought: false };
         this.showShoppingModal = false;
-        this.saveLocalStorage();
       },
-      // 切換已購買狀態
-      toggleBought(originalIdx) {
-        this.shoppingList[originalIdx].isBought = !this.shoppingList[originalIdx].isBought;
-        this.saveLocalStorage();
+      toggleBought(index) {
+        this.shoppingList[index].isBought = !this.shoppingList[index].isBought;
       },
-      deleteShoppingItem(idx) {
-        if (confirm('確定刪除此購物項目？')) {
-          this.shoppingList.splice(idx, 1);
-          this.saveLocalStorage();
+      deleteShoppingItem(index) {
+        if (confirm('確定要刪除此購物項目嗎？')) {
+          this.shoppingList.splice(index, 1);
         }
       },
       addExpense() {
-        if (!this.newExpense.name || !this.newExpense.amount) return;
+        if (!this.newExpense.name || !this.newExpense.amount) {
+          alert('請輸入名稱與金額');
+          return;
+        }
         this.expenses.push({ ...this.newExpense });
         this.newExpense = { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0] };
         this.showExpenseModal = false;
-        this.saveLocalStorage();
       },
-      deleteExpense(idx) {
-        if (confirm('確定刪除此花費紀錄？')) {
-          this.expenses.splice(idx, 1);
-          this.saveLocalStorage();
-        }
-      },
-      initSortable() {
-        this.$nextTick(() => {
-          const el = document.getElementById('itinerary-list');
-          if (el) {
-            this.sortableInstance = new Sortable(el, {
-              animation: 150,
-              handle: '.drag-handle',
-              disabled: true,
-              onEnd: (evt) => {
-                const list = this.itineraryData[this.selectedDayIndex];
-                const movedItem = list.splice(evt.oldIndex, 1)[0];
-                list.splice(evt.newIndex, 0, movedItem);
-                this.saveLocalStorage();
-              }
-            });
-          }
-        });
-      },
-      enableSortable(enable) {
-        if (this.sortableInstance) {
-          this.sortableInstance.option('disabled', !enable);
+      deleteExpense(index) {
+        if (confirm('確定要刪除此筆記帳嗎？')) {
+          this.expenses.splice(index, 1);
         }
       }
     }
   }).mount('#app');
 </script>
-
 </body>
 </html>
