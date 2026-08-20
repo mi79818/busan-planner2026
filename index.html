@@ -214,7 +214,7 @@
 
           </div>
 
-          <!-- 1. 交通時間卡片 (僅顯示在行程與行程之間，且非排序模式下) -->
+          <!-- 交通時間卡片 -->
           <div v-if="idx < currentDayItinerary.length - 1 && !isSortMode" class="flex items-center justify-center py-1">
             <div class="flex items-center space-x-2 bg-white/80 border border-gray-200 px-3 py-1.5 rounded-full text-xs text-gray-600 shadow-sm">
               <button @click="changeTransitMode(item)" class="flex items-center space-x-1 font-semibold text-ocean-dark hover:opacity-80">
@@ -241,7 +241,28 @@
     <!-- 2. 資訊頁面 -->
     <div v-if="currentTab === 'info'" class="space-y-5">
       
-      <!-- 住宿資訊 -->
+      <!-- 1. 即時匯率換算 (已移至最上方) -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+        <h3 class="font-bold text-gray-800 text-sm mb-3 flex items-center">
+          <i class="fa-solid fa-calculator text-ocean-dark mr-2"></i>即時匯率換算 (韓元 ➔ 台幣)
+        </h3>
+        <div class="flex items-center space-x-2">
+          <div class="flex-1">
+            <label class="text-[10px] text-gray-400">韓元 (KRW)</label>
+            <input type="number" v-model="krwInput" placeholder="例如: 10000" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-semibold outline-none focus:border-ocean">
+          </div>
+          <i class="fa-solid fa-arrow-right-arrow-left text-gray-300 mt-4"></i>
+          <div class="flex-1">
+            <label class="text-[10px] text-gray-400">約折合台幣 (TWD)</label>
+            <div class="w-full bg-ocean-light/50 border border-ocean/20 rounded-xl px-3 py-2 text-sm font-bold text-ocean-dark">
+              NT$ {{ calculatedTwd }}
+            </div>
+          </div>
+        </div>
+        <div class="text-[10px] text-gray-400 mt-2 text-right">* 預設匯率基準: 1 TWD ≈ 42 KRW (約乘 0.024)</div>
+      </div>
+
+      <!-- 2. 住宿資訊 -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3">
         <h3 class="font-bold text-gray-800 text-sm flex items-center text-ocean-dark">
           <i class="fa-solid fa-bed mr-2"></i>住宿資訊
@@ -294,28 +315,7 @@
         </div>
       </div>
 
-      <!-- 匯率換算 -->
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-        <h3 class="font-bold text-gray-800 text-sm mb-3 flex items-center">
-          <i class="fa-solid fa-calculator text-ocean-dark mr-2"></i>即時匯率換算 (韓元 ➔ 台幣)
-        </h3>
-        <div class="flex items-center space-x-2">
-          <div class="flex-1">
-            <label class="text-[10px] text-gray-400">韓元 (KRW)</label>
-            <input type="number" v-model="krwInput" placeholder="例如: 10000" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-semibold outline-none focus:border-ocean">
-          </div>
-          <i class="fa-solid fa-arrow-right-arrow-left text-gray-300 mt-4"></i>
-          <div class="flex-1">
-            <label class="text-[10px] text-gray-400">約折合台幣 (TWD)</label>
-            <div class="w-full bg-ocean-light/50 border border-ocean/20 rounded-xl px-3 py-2 text-sm font-bold text-ocean-dark">
-              NT$ {{ calculatedTwd }}
-            </div>
-          </div>
-        </div>
-        <div class="text-[10px] text-gray-400 mt-2 text-right">* 預設匯率基準: 1 TWD ≈ 42 KRW (約乘 0.024)</div>
-      </div>
-
-      <!-- 行前須知卡片 -->
+      <!-- 3. 行前須知卡片 -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3">
         <h3 class="font-bold text-gray-800 text-sm flex items-center text-amber-600">
           <i class="fa-solid fa-triangle-exclamation mr-2 text-amber-500"></i>行前須知
