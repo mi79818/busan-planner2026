@@ -480,19 +480,26 @@
       </div>
 
       <div class="space-y-2">
-        <div v-for="(exp, idx) in expenses" :key="idx" class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center">
-          <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 rounded-xl bg-ocean-light text-ocean-dark flex items-center justify-center font-bold text-sm">
-              {{ exp.category ? exp.category[0] : '其' }}
+        <div v-for="(exp, idx) in expenses" :key="idx" class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-100 flex flex-col space-y-2">
+          <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-xl bg-ocean-light text-ocean-dark flex items-center justify-center font-bold text-sm">
+                {{ exp.category ? exp.category[0] : '其' }}
+              </div>
+              <div>
+                <div class="font-bold text-xs text-gray-800">{{ exp.name }}</div>
+                <div class="text-[10px] text-gray-400">{{ exp.date }} ・ {{ exp.payMethod }}</div>
+              </div>
             </div>
-            <div>
-              <div class="font-bold text-xs text-gray-800">{{ exp.name }}</div>
-              <div class="text-[10px] text-gray-400">{{ exp.date }} ・ {{ exp.payMethod }}</div>
+            <div class="text-right">
+              <div class="font-bold text-sm text-gray-800">₩ {{ Number(exp.amount).toLocaleString() }}</div>
+              <button @click="deleteExpense(idx)" class="text-[10px] text-red-400">刪除</button>
             </div>
           </div>
-          <div class="text-right">
-            <div class="font-bold text-sm text-gray-800">₩ {{ Number(exp.amount).toLocaleString() }}</div>
-            <button @click="deleteExpense(idx)" class="text-[10px] text-red-400">刪除</button>
+
+          <!-- 花費照片展示區塊 (點擊可放大) -->
+          <div v-if="exp.photos && exp.photos.length > 0" class="flex flex-wrap gap-1.5 pt-1 border-t border-gray-50">
+            <img v-for="(photo, pIdx) in exp.photos" :key="pIdx" :src="photo" @click="previewImageUrl = photo" class="w-12 h-12 object-cover rounded-lg border border-gray-200 cursor-pointer hover:scale-105 transition-transform shadow-sm">
           </div>
         </div>
       </div>
@@ -657,7 +664,7 @@
 
   <!-- Modal 4: 新增花費記帳 -->
   <div v-if="showExpenseModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-3">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 max-h-[90vh] overflow-y-auto space-y-3">
       <h3 class="font-bold text-base text-gray-800 mb-2">新增花費記帳</h3>
 
       <div>
@@ -697,6 +704,23 @@
         <input type="date" v-model="newExpense.date" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
       </div>
 
+      <div>
+        <label class="text-xs text-gray-500 block mb-1">上傳照片 / 單據 (選填)</label>
+        <input type="file" ref="expenseFileInput" @change="handleExpenseFileUpload" accept="image/*" class="hidden">
+        <button @click="$refs.expenseFileInput.click()" class="w-full border border-dashed border-gray-300 rounded-xl p-2 text-xs text-gray-600 bg-gray-50 hover:bg-gray-100 flex items-center justify-center space-x-1">
+          <i class="fa-solid fa-camera text-ocean-dark"></i>
+          <span>選擇並上傳圖片</span>
+        </button>
+        <div v-if="newExpense.photos && newExpense.photos.length > 0" class="flex flex-wrap gap-2 mt-2">
+          <div v-for="(img, idx) in newExpense.photos" :key="idx" class="relative group">
+            <img :src="img" class="w-14 h-14 object-cover rounded-lg border border-gray-200">
+            <button @click="removeExpensePhoto(idx)" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-[10px] flex items-center justify-center shadow">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="flex space-x-2 pt-3">
         <button @click="showExpenseModal = false" class="flex-1 bg-gray-100 text-gray-600 rounded-xl py-3 text-xs font-bold">取消</button>
         <button @click="saveExpenseItem" class="flex-1 bg-ocean-dark text-white rounded-xl py-3 text-xs font-bold">儲存</button>
@@ -734,7 +758,7 @@
         expenses: [],
         newShopping: { name: '', location: '', note: '', image: '', isBought: false },
         quickLocations: ['樂天超市', 'Olive Young', '國際市場', '大創', '免稅店', '便利商店'],
-        newExpense: { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0] },
+        newExpense: { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0], photos: [] },
 
         weather: { temp: 26, feelsLike: 28, desc: '多雲晴朗', pop: 10, wind: 2.1 },
 
@@ -1186,8 +1210,26 @@
         reader.readAsDataURL(file);
       },
 
+      handleExpenseFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (!this.newExpense.photos) {
+            this.newExpense.photos = [];
+          }
+          this.newExpense.photos.push(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      },
+
       removePhoto(index) {
         this.modalItem.photos.splice(index, 1);
+      },
+
+      removeExpensePhoto(index) {
+        this.newExpense.photos.splice(index, 1);
       },
 
       openAddModalWithAuth() {
@@ -1349,7 +1391,7 @@
           return;
         }
         this.expenses.push({ ...this.newExpense });
-        this.newExpense = { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0] };
+        this.newExpense = { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0], photos: [] };
         this.showExpenseModal = false;
       },
 
