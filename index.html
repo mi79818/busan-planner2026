@@ -590,9 +590,22 @@
         </div>
       </div>
 
+      <!-- 上傳購物商品圖片功能 (修改項目 1) -->
       <div>
-        <label class="text-xs text-gray-500">圖片網址 (選填)</label>
-        <input type="text" v-model="newShopping.image" placeholder="https://..." class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+        <label class="text-xs text-gray-500 block mb-1">商品圖片 (選填)</label>
+        <input type="file" ref="shoppingFileInput" @change="handleShoppingFileUpload" accept="image/*" class="hidden">
+        <div v-if="!newShopping.image">
+          <button @click="$refs.shoppingFileInput.click()" class="w-full border border-dashed border-gray-300 rounded-xl p-2 text-xs text-gray-600 bg-gray-50 hover:bg-gray-100 flex items-center justify-center space-x-1">
+            <i class="fa-solid fa-camera text-ocean-dark"></i>
+            <span>選擇並上傳圖片</span>
+          </button>
+        </div>
+        <div v-else class="relative w-20 h-20 mt-1">
+          <img :src="newShopping.image" class="w-full h-full object-cover rounded-xl border border-gray-200">
+          <button @click="newShopping.image = ''" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center shadow">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
       </div>
 
       <div>
@@ -713,7 +726,6 @@
           ]
         },
 
-        // 資訊頁面可編輯卡片列表
         infoCards: [
           {
             id: 'info-calc',
@@ -880,7 +892,6 @@
         ],
 
         koreanList: [
-          // 日常用
           { category: '日常用', zh: '你好', kr: '안녕하세요', pron: '安妞哈誰呦' },
           { category: '日常用', zh: '不好意思、請問…', kr: '저기요', pron: '秋gi唷' },
           { category: '日常用', zh: '謝謝', kr: '감사합니다', pron: '康撒哈密達' },
@@ -896,8 +907,6 @@
           { category: '日常用', zh: '不需要、不用了', kr: '필요 없어요.', pron: '批溜歐噗搜呦' },
           { category: '日常用', zh: '借過一下', kr: '빌려 갈게요.', pron: 'pi溜嗨給呦' },
           { category: '日常用', zh: '可以幫我拍照嗎？', kr: '사진 찍어 주세요', pron: '撒金 機勾主塞呦' },
-
-          // 餐廳用
           { category: '餐廳用', zh: '我們有預約', kr: '저희는 예약이 있습니다.', pron: '秋一嫩耶壓給斯米達' },
           { category: '餐廳用', zh: '我們是５個人', kr: '저희는 다섯 명입니다.', pron: '秋一嫩塔搜myong一米達' },
           { category: '餐廳用', zh: '我要內用', kr: '여기서 먹고 갈게요', pron: '呦gi搜mo估喔開給呦' },
@@ -918,8 +927,6 @@
           { category: '餐廳用', zh: '我要結帳', kr: '계산할게요', pron: '給沙拿給唷' },
           { category: '餐廳用', zh: '可以打包嗎？', kr: '포장도 되나요?', pron: '噗醬嘟土娜呦' },
           { category: '餐廳用', zh: '請幫我外帶', kr: '포장해 주세요', pron: '噗醬嘿 啾誰優' },
-
-          // 點飲料用
           { category: '點飲料用', zh: '美式咖啡', kr: '아메리카노', pron: '阿妹哩勘努' },
           { category: '點飲料用', zh: '拿鐵', kr: '라떼', pron: 'ki曲' },
           { category: '點飲料用', zh: '請幫我去冰', kr: '저를 얼음으로 가게 해 주세요.', pron: '' },
@@ -927,15 +934,11 @@
           { category: '點飲料用', zh: '我要少冰', kr: '얼음 조금만 넣어주세요', pron: '歐room球估曼no啾誰唷' },
           { category: '點飲料用', zh: '外帶', kr: '테이크아웃', pron: '' },
           { category: '點飲料用', zh: '請給我吸管', kr: '빨대주세요.', pron: '掰對 啾誰優' },
-
-          // 付錢用
           { category: '付錢用', zh: '多少錢？', kr: '얼마예요?', pron: '歐媽耶唷' },
           { category: '付錢用', zh: '可以退稅嗎？', kr: '택스프리 돼요？', pron: 'Tax free對呦？' },
           { category: '付錢用', zh: '可以刷卡嗎？', kr: '카드 돼요?', pron: '咔嘟 對唷' },
           { category: '付錢用', zh: '只能用現金嗎？', kr: '현금만 사용할 수 있나요?', pron: 'hyong估慢塞佣蘇一娜呦' },
           { category: '付錢用', zh: '請給我收據', kr: '영수증 주세요.', pron: '勇蘇俊 啾誰唷' },
-
-          // 購物用
           { category: '購物用', zh: '這個多少錢？', kr: '이거 얼마예요', pron: '一勾歐瑪耶呦' },
           { category: '購物用', zh: '太貴了', kr: '너무 비싸요', pron: '諾木比撒呦' },
           { category: '購物用', zh: '便宜點吧', kr: '깎아 주세요', pron: '嘎嘎主塞呦' },
@@ -946,8 +949,6 @@
           { category: '購物用', zh: '有其他尺寸嗎？', kr: '다른 크기도 있나요?', pron: '他論哭gi豆 in娜呦' },
           { category: '購物用', zh: '有小一號的嗎？', kr: '한 치수 작은 것도 있나요?', pron: '憨曲蘇 叉棍go肚 in娜呦' },
           { category: '購物用', zh: '有大一號的嗎？', kr: '한 치수 더 큰 것이 있나요?', pron: '憨曲蘇頭睏go系 in娜呦' },
-
-          // 交通用
           { category: '交通用', zh: '請帶我到這個地址', kr: '이 주소로 데려다 주세요.', pron: '' },
           { category: '交通用', zh: '我要去這裡', kr: '여기 가 주세요', pron: '優gi卡主塞呦' },
           { category: '交通用', zh: '請在這裡停車', kr: '여기 세워주세요.', pron: '呦gi誰唷啾誰唷' },
@@ -991,7 +992,6 @@
       }
     },
     methods: {
-      // 韓語發音 (TTS)
       speakKorean(text) {
         if ('speechSynthesis' in window) {
           window.speechSynthesis.cancel();
@@ -1004,7 +1004,6 @@
         }
       },
 
-      // 複製地址功能
       copyToClipboard(text) {
         if (!text) return;
         navigator.clipboard.writeText(text).then(() => {
@@ -1020,7 +1019,6 @@
         }, 2000);
       },
 
-      // 驗證密碼 helper
       checkPassword() {
         const pwd = prompt('請輸入修改密碼：');
         if (pwd === '868') {
@@ -1031,7 +1029,6 @@
         }
       },
 
-      // 切換交通工具
       changeTransitMode(item) {
         if (!this.checkPassword()) return;
         const modes = ['計程車', '坐公車', '走路'];
@@ -1040,7 +1037,6 @@
         item.transitMode = modes[nextIdx];
       },
 
-      // 編輯交通時間
       editTransitTime(item) {
         if (!this.checkPassword()) return;
         const newTime = prompt('請輸入所需交通時間 (分鐘):', item.transitTime || '15');
@@ -1049,7 +1045,6 @@
         }
       },
 
-      // 取得交通工具 Icon
       getTransitIcon(mode) {
         switch (mode) {
           case '坐公車': return 'fa-solid fa-bus';
@@ -1059,7 +1054,6 @@
         }
       },
 
-      // 上傳圖片處理 (轉 Base64)
       handleFileUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -1074,12 +1068,22 @@
         reader.readAsDataURL(file);
       },
 
-      // 移除照片
+      // 購物商品圖片上傳處理 (修改項目 1)
+      handleShoppingFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.newShopping.image = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      },
+
       removePhoto(index) {
         this.modalItem.photos.splice(index, 1);
       },
 
-      // 開啟新增行程 Modal
       openAddModalWithAuth() {
         if (this.checkPassword()) {
           this.isEditMode = false;
@@ -1088,7 +1092,6 @@
         }
       },
 
-      // 開啟編輯行程 Modal
       openEditModalWithAuth(item) {
         if (this.checkPassword()) {
           this.isEditMode = true;
@@ -1098,7 +1101,6 @@
         }
       },
 
-      // 儲存行程
       saveItinerary() {
         if (!this.modalItem.title) {
           alert('請輸入名稱！');
@@ -1121,7 +1123,6 @@
         this.showItineraryModal = false;
       },
 
-      // 刪除行程
       confirmDeleteItinerary() {
         if (confirm('確定要刪除此行程嗎？')) {
           let dayList = this.itineraryData[this.selectedDayIndex] || [];
@@ -1130,7 +1131,6 @@
         }
       },
 
-      // 編輯資訊頁面卡片
       openEditInfoModalWithAuth(card) {
         if (this.checkPassword()) {
           this.editingCard = JSON.parse(JSON.stringify(card));
@@ -1143,7 +1143,6 @@
         }
       },
 
-      // 儲存資訊卡片內容
       saveInfoCard() {
         const idx = this.infoCards.findIndex(c => c.id === this.editingCard.id);
         if (idx !== -1) {
@@ -1158,8 +1157,12 @@
         this.showToast('卡片編輯成功！');
       },
 
-      // 切換資訊卡片排序模式
+      // 資訊頁面排序切換 (修改項目 2：加入密碼驗證)
       toggleInfoSortMode() {
+        if (!this.isInfoSortMode) {
+          if (!this.checkPassword()) return;
+        }
+
         this.isInfoSortMode = !this.isInfoSortMode;
         if (this.isInfoSortMode) {
           this.$nextTick(() => {
@@ -1183,7 +1186,6 @@
         }
       },
 
-      // 分類標籤樣式
       getCategoryBadgeClass(category) {
         switch (category) {
           case '景點': return 'bg-amber-100 text-amber-700';
@@ -1194,7 +1196,6 @@
         }
       },
 
-      // 切換拖曳排序模式
       toggleSortMode() {
         this.isSortMode = !this.isSortMode;
         if (this.isSortMode) {
@@ -1219,7 +1220,6 @@
         }
       },
 
-      // 儲存購物項目
       saveShoppingItem() {
         if (!this.newShopping.name) {
           alert('請輸入商品名稱！');
@@ -1230,7 +1230,6 @@
         this.showShoppingModal = false;
       },
 
-      // 購物清單相關方法
       toggleBought(idx) {
         this.shoppingList[idx].isBought = !this.shoppingList[idx].isBought;
       },
@@ -1238,7 +1237,6 @@
         this.shoppingList.splice(idx, 1);
       },
 
-      // 儲存花費記帳
       saveExpenseItem() {
         if (!this.newExpense.name || !this.newExpense.amount) {
           alert('請輸入名稱與金額！');
