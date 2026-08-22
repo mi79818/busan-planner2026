@@ -54,6 +54,12 @@
     {{ toastMessage }}
   </div>
 
+  <!-- 全螢幕大圖 Modal -->
+  <div v-if="previewImageUrl" @click="previewImageUrl = null" class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 cursor-pointer">
+    <img :src="previewImageUrl" class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl">
+    <button class="absolute top-5 right-5 text-white text-2xl"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+
   <!-- 頁首 Banner (250px 高度) -->
   <div class="relative h-[250px] w-full overflow-hidden">
     <img src="banner.jpg" alt="Busan Header" class="w-full h-full object-cover object-left" onerror="this.src='https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1920&q=80'">
@@ -117,18 +123,19 @@
         </button>
       </div>
 
-      <!-- 天氣資訊卡 -->
+      <!-- 天氣資訊卡 (包含體感溫度) -->
       <div class="bg-gradient-to-r from-blue-400 to-ocean-dark text-white rounded-2xl p-4 mb-4 shadow-sm flex items-center justify-between">
         <div class="flex items-center space-x-3">
           <i :class="weatherIcon" class="text-3xl"></i>
           <div>
             <div class="text-xs opacity-90">釜山即時天氣</div>
-            <div class="text-lg font-bold">{{ weather.temp }}°C・{{ weather.desc }}</div>
+            <div class="text-base font-bold leading-tight">{{ weather.temp }}°C <span class="text-xs font-normal opacity-90">(體感 {{ weather.feelsLike }}°C)</span></div>
+            <div class="text-xs font-medium opacity-90 mt-0.5">{{ weather.desc }}</div>
           </div>
         </div>
-        <div class="text-right text-xs opacity-90">
+        <div class="text-right text-xs opacity-90 space-y-1">
           <div><i class="fa-solid fa-umbrella mr-1"></i>降雨率: {{ weather.pop }}%</div>
-          <div>風速: {{ weather.wind }} m/s</div>
+          <div><i class="fa-solid fa-wind mr-1"></i>風速: {{ weather.wind }} m/s</div>
         </div>
       </div>
 
@@ -161,6 +168,12 @@
                   <div class="text-xs text-slate-300">{{ item.arrTime }}</div>
                 </div>
               </div>
+
+              <!-- 照片展示區塊 (航班卡片) -->
+              <div v-if="item.photos && item.photos.length > 0" class="flex flex-wrap gap-1.5 my-2">
+                <img v-for="(photo, pIdx) in item.photos" :key="pIdx" :src="photo" @click="previewImageUrl = photo" class="w-12 h-12 object-cover rounded-lg border border-slate-500 cursor-pointer hover:opacity-80 transition-opacity">
+              </div>
+
               <div class="text-xs text-slate-300 border-t border-slate-600/50 pt-2 mt-2 flex justify-between items-center">
                 <span>{{ item.title }}</span>
                 <button @click="openEditModalWithAuth(item)" class="text-blue-300 underline">編輯</button>
@@ -206,6 +219,11 @@
                 <div v-if="item.note"><i class="fa-regular fa-note-sticky mr-1 text-gray-400"></i>備註: {{ item.note }}</div>
               </div>
 
+              <!-- 照片展示區塊 (小圖) -->
+              <div v-if="item.photos && item.photos.length > 0" class="mt-3 flex flex-wrap gap-1.5" :class="isSortMode ? 'ml-6' : ''">
+                <img v-for="(photo, pIdx) in item.photos" :key="pIdx" :src="photo" @click="previewImageUrl = photo" class="w-12 h-12 object-cover rounded-lg border border-gray-200 cursor-pointer hover:scale-105 transition-transform shadow-sm">
+              </div>
+
               <!-- Naver Map 導航按鈕 -->
               <div class="mt-3 flex justify-end">
                 <a :href="item.naverUrl || 'https://map.naver.com'" target="_blank" class="inline-flex items-center space-x-1.5 bg-[#03C75A] text-white text-xs px-3.5 py-1.5 rounded-full font-medium shadow-sm hover:bg-emerald-600 transition-colors">
@@ -244,7 +262,7 @@
     <!-- 2. 資訊頁面 -->
     <div v-if="currentTab === 'info'" class="space-y-5">
       
-      <!-- 1. 即時匯率換算 (已移至最上方) -->
+      <!-- 1. 即時匯率換算 -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
         <h3 class="font-bold text-gray-800 text-sm mb-3 flex items-center">
           <i class="fa-solid fa-calculator text-ocean-dark mr-2"></i>即時匯率換算 (韓元 ➔ 台幣)
@@ -265,60 +283,7 @@
         <div class="text-[10px] text-gray-400 mt-2 text-right">* 預設匯率基準: 1 TWD ≈ 42 KRW (約乘 0.024)</div>
       </div>
 
-      <!-- 2. 住宿資訊 -->
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3">
-        <h3 class="font-bold text-gray-800 text-sm flex items-center text-ocean-dark">
-          <i class="fa-solid fa-bed mr-2"></i>住宿資訊
-        </h3>
-        
-        <div class="space-y-3 text-xs">
-          <!-- 廣安里民宿 -->
-          <div class="bg-ocean-light/40 p-3 rounded-xl border border-ocean/20 space-y-2">
-            <div class="flex justify-between items-center">
-              <span class="font-bold text-ocean-deep text-sm">廣安里民宿</span>
-              <span class="bg-ocean-dark text-white text-[10px] px-2 py-0.5 rounded-full font-medium">8/31 ~ 9/1 (兩晚)</span>
-            </div>
-            
-            <div @click="copyToClipboard('부산 수영구 민락수변로 49')" 
-                 class="flex items-center space-x-1.5 text-gray-700 bg-white p-2 rounded-lg cursor-pointer hover:bg-gray-50 border border-gray-100 group/addr">
-              <i class="fa-solid fa-location-dot text-ocean-dark"></i>
-              <span class="font-medium flex-1">부산 수영구 민락수변로 49</span>
-              <i class="fa-regular fa-copy text-[10px] text-gray-400 group-hover/addr:text-ocean-dark"></i>
-            </div>
-
-            <div class="flex justify-end">
-              <a href="https://naver.me/5UVeuY2u" target="_blank" class="inline-flex items-center space-x-1 text-[#03C75A] font-bold text-[11px] hover:underline">
-                <i class="fa-solid fa-map-location-dot"></i>
-                <span>NAVER 地圖查看</span>
-              </a>
-            </div>
-          </div>
-
-          <!-- 海雲台民宿 -->
-          <div class="bg-ocean-light/40 p-3 rounded-xl border border-ocean/20 space-y-2">
-            <div class="flex justify-between items-center">
-              <span class="font-bold text-ocean-deep text-sm">海雲台民宿</span>
-              <span class="bg-ocean-dark text-white text-[10px] px-2 py-0.5 rounded-full font-medium">9/2 ~ 9/4 (三晚)</span>
-            </div>
-            
-            <div @click="copyToClipboard('부산시 해운대해변로 298번길 29, 해운대 푸르지오시티')" 
-                 class="flex items-center space-x-1.5 text-gray-700 bg-white p-2 rounded-lg cursor-pointer hover:bg-gray-50 border border-gray-100 group/addr">
-              <i class="fa-solid fa-location-dot text-ocean-dark"></i>
-              <span class="font-medium flex-1">부산시 해운대해변로 298번길 29, 해운대 푸르지오시티</span>
-              <i class="fa-regular fa-copy text-[10px] text-gray-400 group-hover/addr:text-ocean-dark"></i>
-            </div>
-
-            <div class="flex justify-end">
-              <a href="https://naver.me/5nh1UWce" target="_blank" class="inline-flex items-center space-x-1 text-[#03C75A] font-bold text-[11px] hover:underline">
-                <i class="fa-solid fa-map-location-dot"></i>
-                <span>NAVER 地圖查看</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 3. 行前須知卡片 -->
+      <!-- 2. 行前須知卡片 (調整至第二位) -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3">
         <h3 class="font-bold text-gray-800 text-sm flex items-center text-amber-600">
           <i class="fa-solid fa-triangle-exclamation mr-2 text-amber-500"></i>行前須知
@@ -385,6 +350,60 @@
           </div>
         </div>
       </div>
+
+      <!-- 3. 住宿資訊 (調整至最後) -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3">
+        <h3 class="font-bold text-gray-800 text-sm flex items-center text-ocean-dark">
+          <i class="fa-solid fa-bed mr-2"></i>住宿資訊
+        </h3>
+        
+        <div class="space-y-3 text-xs">
+          <!-- 廣安里民宿 -->
+          <div class="bg-ocean-light/40 p-3 rounded-xl border border-ocean/20 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-ocean-deep text-sm">廣安里民宿</span>
+              <span class="bg-ocean-dark text-white text-[10px] px-2 py-0.5 rounded-full font-medium">8/31 ~ 9/1 (兩晚)</span>
+            </div>
+            
+            <div @click="copyToClipboard('부산 수영구 민락수변로 49')" 
+                 class="flex items-center space-x-1.5 text-gray-700 bg-white p-2 rounded-lg cursor-pointer hover:bg-gray-50 border border-gray-100 group/addr">
+              <i class="fa-solid fa-location-dot text-ocean-dark"></i>
+              <span class="font-medium flex-1">부산 수영구 민락수변로 49</span>
+              <i class="fa-regular fa-copy text-[10px] text-gray-400 group-hover/addr:text-ocean-dark"></i>
+            </div>
+
+            <div class="flex justify-end">
+              <a href="https://naver.me/5UVeuY2u" target="_blank" class="inline-flex items-center space-x-1 text-[#03C75A] font-bold text-[11px] hover:underline">
+                <i class="fa-solid fa-map-location-dot"></i>
+                <span>NAVER 地圖查看</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 海雲台民宿 -->
+          <div class="bg-ocean-light/40 p-3 rounded-xl border border-ocean/20 space-y-2">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-ocean-deep text-sm">海雲台民宿</span>
+              <span class="bg-ocean-dark text-white text-[10px] px-2 py-0.5 rounded-full font-medium">9/2 ~ 9/4 (三晚)</span>
+            </div>
+            
+            <div @click="copyToClipboard('부산시 해운대해변로 298번길 29, 해운대 푸르지오시티')" 
+                 class="flex items-center space-x-1.5 text-gray-700 bg-white p-2 rounded-lg cursor-pointer hover:bg-gray-50 border border-gray-100 group/addr">
+              <i class="fa-solid fa-location-dot text-ocean-dark"></i>
+              <span class="font-medium flex-1">부산시 해운대해변로 298번길 29, 해운대 푸르지오시티</span>
+              <i class="fa-regular fa-copy text-[10px] text-gray-400 group-hover/addr:text-ocean-dark"></i>
+            </div>
+
+            <div class="flex justify-end">
+              <a href="https://naver.me/5nh1UWce" target="_blank" class="inline-flex items-center space-x-1 text-[#03C75A] font-bold text-[11px] hover:underline">
+                <i class="fa-solid fa-map-location-dot"></i>
+                <span>NAVER 地圖查看</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <!-- 3. 韓語即時通頁面 -->
@@ -555,6 +574,24 @@
         <textarea v-model="modalItem.note" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none h-20"></textarea>
       </div>
 
+      <!-- 上傳照片欄位 -->
+      <div>
+        <label class="text-xs text-gray-500 block mb-1">上傳照片</label>
+        <input type="file" ref="fileInput" @change="handleFileUpload" accept="image/*" class="hidden">
+        <button @click="$refs.fileInput.click()" class="w-full border border-dashed border-gray-300 rounded-xl p-2 text-xs text-gray-600 bg-gray-50 hover:bg-gray-100 flex items-center justify-center space-x-1">
+          <i class="fa-solid fa-camera text-ocean-dark"></i>
+          <span>選擇並上傳圖片</span>
+        </button>
+        <div v-if="modalItem.photos && modalItem.photos.length > 0" class="flex flex-wrap gap-2 mt-2">
+          <div v-for="(img, idx) in modalItem.photos" :key="idx" class="relative group">
+            <img :src="img" class="w-14 h-14 object-cover rounded-lg border border-gray-200">
+            <button @click="removePhoto(idx)" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-[10px] flex items-center justify-center shadow">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="flex space-x-2 pt-3">
         <button v-if="isEditMode" @click="confirmDeleteItinerary" class="flex-1 bg-red-100 text-red-600 rounded-xl py-3 text-xs font-bold">刪除</button>
         <button @click="showItineraryModal = false" class="flex-1 bg-gray-100 text-gray-600 rounded-xl py-3 text-xs font-bold">取消</button>
@@ -663,20 +700,22 @@
         selectedKoreanCategory: '全部',
         krwInput: null,
         toastMessage: '',
+        previewImageUrl: null, // 大圖預覽用
         showItineraryModal: false,
         showShoppingModal: false,
         showExpenseModal: false,
         isEditMode: false,
         isSortMode: false,
         sortableInstance: null,
-        modalItem: {},
+        modalItem: { photos: [] },
         shoppingList: [],
         expenses: [],
         newShopping: { name: '', location: '', note: '', image: '', isBought: false },
         quickLocations: ['樂天超市', 'Olive Young', '國際市場', '大創', '免稅店', '便利商店'],
         newExpense: { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0] },
 
-        weather: { temp: 26, desc: '多雲晴朗', pop: 10, wind: 2.1 },
+        // 加入體感溫度 (feelsLike)
+        weather: { temp: 26, feelsLike: 28, desc: '多雲晴朗', pop: 10, wind: 2.1 },
 
         days: [
           { week: 'Mon', date: '8/31' },
@@ -689,15 +728,15 @@
 
         itineraryData: {
           0: [
-            { id: 101, category: '航班', title: '台北(桃園) ➔ 釜山', time: '13:30~17:05', flightNo: 'BX 794', depCode: 'TPE', depTime: '13:30', arrCode: 'PUS', arrTime: '17:05', duration: '2h 35m', transitMode: '計程車', transitTime: '40' },
-            { id: 102, category: '其他', title: '領取物資', time: '18:30~19:00', note: '活動區拿禮物、LG U+ SIM卡、領釜山Pass', transitMode: '計程車', transitTime: '30' },
-            { id: 103, category: '住宿', title: '廣安里民宿放行李', time: '19:00~20:00', address: '부산 수영구 민락수변로 49', naverUrl: 'https://naver.me/5UVeuY2u', transitMode: '走路', transitTime: '10' },
-            { id: 104, category: '美食', title: '고결 稻草烤牛肋排', time: '20:00~22:00', openHours: '16:00~24:00', address: '부산 수영구 광안해변로255번길 50 1~2층', naverUrl: 'https://naver.me/xqbUlk43', transitMode: '走路', transitTime: '5' },
-            { id: 105, category: '購物', title: 'CU超商買隔天早餐', time: '22:00~' }
+            { id: 101, category: '航班', title: '台北(桃園) ➔ 釜山', time: '13:30~17:05', flightNo: 'BX 794', depCode: 'TPE', depTime: '13:30', arrCode: 'PUS', arrTime: '17:05', duration: '2h 35m', transitMode: '計程車', transitTime: '40', photos: [] },
+            { id: 102, category: '其他', title: '領取物資', time: '18:30~19:00', note: '活動區拿禮物、LG U+ SIM卡、領釜山Pass', transitMode: '計程車', transitTime: '30', photos: [] },
+            { id: 103, category: '住宿', title: '廣安里民宿放行李', time: '19:00~20:00', address: '부산 수영구 민락수변로 49', naverUrl: 'https://naver.me/5UVeuY2u', transitMode: '走路', transitTime: '10', photos: [] },
+            { id: 104, category: '美食', title: '고결 稻草烤牛肋排', time: '20:00~22:00', openHours: '16:00~24:00', address: '부산 수영구 광안해변로255번길 50 1~2층', naverUrl: 'https://naver.me/xqbUlk43', transitMode: '走路', transitTime: '5', photos: [] },
+            { id: 105, category: '購物', title: 'CU超商買隔天早餐', time: '22:00~', photos: [] }
           ],
           1: [
-            { id: 201, category: '景點', title: '松島纜車 (송도 베이스테이션)', time: '10:10~12:00', openHours: '09:00~22:00', address: '부산 서구 송도해변로 171', naverUrl: 'https://naver.me/FvTJ9azl', transitMode: '計程車', transitTime: '20' },
-            { id: 202, category: '美食', title: '太宗台炒瑪麵 (태종대짬뽕)', time: '12:30~14:00', openHours: '09:30~21:30', address: '부산 영도구 태종로 805 태짬', naverUrl: 'https://naver.me/5MvcLg2O' }
+            { id: 201, category: '景點', title: '松島纜車 (송도 베이스테이션)', time: '10:10~12:00', openHours: '09:00~22:00', address: '부산 서구 송도해변로 171', naverUrl: 'https://naver.me/FvTJ9azl', transitMode: '計程車', transitTime: '20', photos: [] },
+            { id: 202, category: '美食', title: '太宗台炒瑪麵 (태종대짬뽕)', time: '12:30~14:00', openHours: '09:30~21:30', address: '부산 영도구 태종로 805 태짬', naverUrl: 'https://naver.me/5MvcLg2O', photos: [] }
           ]
         },
 
@@ -814,10 +853,10 @@
       // 韓語發音 (TTS)
       speakKorean(text) {
         if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel(); // 停止先前的發音
+          window.speechSynthesis.cancel();
           const utterance = new SpeechSynthesisUtterance(text);
           utterance.lang = 'ko-KR';
-          utterance.rate = 0.85; // 稍微放慢語速方便聽清
+          utterance.rate = 0.85;
           window.speechSynthesis.speak(utterance);
         } else {
           this.showToast('您的瀏覽器不支援語音發音');
@@ -851,7 +890,7 @@
         }
       },
 
-      // 切換交通工具 (需密碼 868)
+      // 切換交通工具
       changeTransitMode(item) {
         if (!this.checkPassword()) return;
         const modes = ['計程車', '坐公車', '走路'];
@@ -860,7 +899,7 @@
         item.transitMode = modes[nextIdx];
       },
 
-      // 編輯交通時間 (需密碼 868)
+      // 編輯交通時間
       editTransitTime(item) {
         if (!this.checkPassword()) return;
         const newTime = prompt('請輸入所需交通時間 (分鐘):', item.transitTime || '15');
@@ -879,20 +918,41 @@
         }
       },
 
-      // 開啟新增行程 Modal (需密碼 868)
+      // 上傳圖片處理 (轉 Base64)
+      handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (!this.modalItem.photos) {
+            this.modalItem.photos = [];
+          }
+          this.modalItem.photos.push(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      },
+
+      // 移除照片
+      removePhoto(index) {
+        this.modalItem.photos.splice(index, 1);
+      },
+
+      // 開啟新增行程 Modal
       openAddModalWithAuth() {
         if (this.checkPassword()) {
           this.isEditMode = false;
-          this.modalItem = { category: '景點', transitMode: '計程車', transitTime: '15' };
+          this.modalItem = { category: '景點', transitMode: '計程車', transitTime: '15', photos: [] };
           this.showItineraryModal = true;
         }
       },
 
-      // 開啟編輯行程 Modal (需密碼 868)
+      // 開啟編輯行程 Modal
       openEditModalWithAuth(item) {
         if (this.checkPassword()) {
           this.isEditMode = true;
           this.modalItem = JSON.parse(JSON.stringify(item));
+          if (!this.modalItem.photos) this.modalItem.photos = [];
           this.showItineraryModal = true;
         }
       },
