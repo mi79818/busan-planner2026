@@ -69,6 +69,9 @@
       <button @click="currentTab = 'info'" :class="currentTab === 'info' ? 'bg-ocean-dark text-white' : 'text-gray-600'" class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200">
         <i class="fa-solid fa-circle-info text-lg"></i>
       </button>
+      <button @click="currentTab = 'korean'" :class="currentTab === 'korean' ? 'bg-ocean-dark text-white' : 'text-gray-600'" class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200" title="韓語即時通">
+        <i class="fa-solid fa-language text-lg"></i>
+      </button>
       <button @click="currentTab = 'shopping'" :class="currentTab === 'shopping' ? 'bg-ocean-dark text-white' : 'text-gray-600'" class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-200">
         <i class="fa-solid fa-basket-shopping text-lg"></i>
       </button>
@@ -384,7 +387,41 @@
       </div>
     </div>
 
-    <!-- 3. 購物清單頁面 -->
+    <!-- 3. 韓語即時通頁面 -->
+    <div v-if="currentTab === 'korean'" class="space-y-4">
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+        <h3 class="font-bold text-gray-800 text-sm flex items-center">
+          <i class="fa-solid fa-language text-ocean-dark mr-2 text-base"></i>韓語即時通
+        </h3>
+        <select v-model="selectedKoreanCategory" class="bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 outline-none focus:border-ocean font-medium">
+          <option value="全部">全部情境</option>
+          <option value="日常用">日常用</option>
+          <option value="餐廳用">餐廳用</option>
+          <option value="點飲料用">點飲料用</option>
+          <option value="付錢用">付錢用</option>
+          <option value="購物用">購物用</option>
+          <option value="交通用">交通用</option>
+        </select>
+      </div>
+
+      <div class="space-y-3">
+        <div v-for="(item, idx) in filteredKoreanList" :key="idx" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between hover:border-ocean/40 transition-colors">
+          <div class="flex-1 pr-3">
+            <div class="flex items-center space-x-2 mb-1">
+              <span class="bg-ocean-light text-ocean-dark text-[10px] font-bold px-2 py-0.5 rounded-md">{{ item.category }}</span>
+              <span class="text-xs font-bold text-gray-800">{{ item.zh }}</span>
+            </div>
+            <div class="text-sm font-bold text-ocean-deep tracking-wide">{{ item.kr }}</div>
+            <div v-if="item.pron" class="text-xs text-gray-400 mt-0.5">讀音：{{ item.pron }}</div>
+          </div>
+          <button @click="speakKorean(item.kr)" class="w-10 h-10 bg-ocean-light hover:bg-ocean text-ocean-dark hover:text-white rounded-full flex items-center justify-center transition-all flex-shrink-0 active:scale-95 shadow-sm">
+            <i class="fa-solid fa-volume-high text-base"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 購物清單頁面 -->
     <div v-if="currentTab === 'shopping'" class="space-y-4">
       <div v-if="Object.keys(groupedShoppingList).length === 0" class="text-center py-10 text-gray-400 text-xs">
         目前沒有購物項目，點擊右下角「+」新增！
@@ -429,7 +466,7 @@
       </button>
     </div>
 
-    <!-- 4. 花費記帳頁面 -->
+    <!-- 5. 花費記帳頁面 -->
     <div v-if="currentTab === 'expenses'" class="space-y-4">
       <div class="bg-gradient-to-r from-ocean-dark to-ocean-deep text-white p-5 rounded-2xl shadow-md">
         <span class="text-xs opacity-80">累積總花費</span>
@@ -623,6 +660,7 @@
         currentTab: 'itinerary',
         selectedDayIndex: 0,
         filterCategory: '全部',
+        selectedKoreanCategory: '全部',
         krwInput: null,
         toastMessage: '',
         showItineraryModal: false,
@@ -661,7 +699,81 @@
             { id: 201, category: '景點', title: '松島纜車 (송도 베이스테이션)', time: '10:10~12:00', openHours: '09:00~22:00', address: '부산 서구 송도해변로 171', naverUrl: 'https://naver.me/FvTJ9azl', transitMode: '計程車', transitTime: '20' },
             { id: 202, category: '美食', title: '太宗台炒瑪麵 (태종대짬뽕)', time: '12:30~14:00', openHours: '09:30~21:30', address: '부산 영도구 태종로 805 태짬', naverUrl: 'https://naver.me/5MvcLg2O' }
           ]
-        }
+        },
+
+        koreanList: [
+          // 日常用
+          { category: '日常用', zh: '你好', kr: '안녕하세요', pron: '安妞哈誰呦' },
+          { category: '日常用', zh: '不好意思、請問…', kr: '저기요', pron: '秋gi唷' },
+          { category: '日常用', zh: '謝謝', kr: '감사합니다', pron: '康撒哈密達' },
+          { category: '日常用', zh: '辛苦了', kr: '수고하셨습니다', pron: '蘇ga啾斯密達' },
+          { category: '日常用', zh: '不好意思、對不起', kr: '죄송합니다', pron: '啾送哈密達' },
+          { category: '日常用', zh: '廁所在哪？', kr: '화장실 어디예요?', pron: '花張西 歐迪耶唷' },
+          { category: '日常用', zh: '是', kr: '네', pron: 'ㄋㄟˉ' },
+          { category: '日常用', zh: '不是', kr: '아니요', pron: '阿ni呦' },
+          { category: '日常用', zh: '請給我', kr: '주세요', pron: '啾誰呦' },
+          { category: '日常用', zh: '沒關係', kr: '괜찮아요', pron: 'king洽拿呦' },
+          { category: '日常用', zh: '需要', kr: '필요합니다.', pron: 'pi溜憨你搭' },
+          { category: '日常用', zh: '不需要、不用了', kr: '필요 없어요.', pron: '批溜歐噗搜呦' },
+          { category: '日常用', zh: '借過一下', kr: '빌려 갈게요.', pron: 'pi溜嗨給呦' },
+          { category: '日常用', zh: '可以幫我拍照嗎？', kr: '사진 찍어 주세요', pron: '撒金 機勾主塞呦' },
+
+          // 餐廳用
+          { category: '餐廳用', zh: '我們有預約', kr: '저희는 예약이 있습니다.', pron: '秋一嫩耶壓給斯米達' },
+          { category: '餐廳用', zh: '我們是５個人', kr: '저희는 다섯 명입니다.', pron: '秋一嫩塔搜myong一米達' },
+          { category: '餐廳用', zh: '我要內用', kr: '여기서 먹고 갈게요', pron: '呦gi搜mo估喔開給呦' },
+          { category: '餐廳用', zh: '這裡(叫店員)', kr: '여기요.', pron: '唷gi優' },
+          { category: '餐廳用', zh: '請給我菜單', kr: '메뉴판 주세요.', pron: '美妞盤 啾誰優' },
+          { category: '餐廳用', zh: '有中文菜單嗎', kr: '중국어 메뉴가 있나요?', pron: '中國喔menu一拿呦' },
+          { category: '餐廳用', zh: '我要點餐', kr: '주문할게요', pron: '出mu拿給唷' },
+          { category: '餐廳用', zh: '請推薦一下', kr: '추천해 주세요', pron: 'chu秋捏 朱塞唷' },
+          { category: '餐廳用', zh: '請給我這個', kr: '이거 주세요', pron: '伊勾 朱塞唷' },
+          { category: '餐廳用', zh: '請給我水', kr: '물 주세요.', pron: '母 炯 朱塞唷' },
+          { category: '餐廳用', zh: '不要辣', kr: '맵지 마세요', pron: '安 妹給 嘿啾誰優' },
+          { category: '餐廳用', zh: '有不辣的嗎？', kr: '안 매운 것도 있나요?', pron: '安maeun溝嘟in娜呦' },
+          { category: '餐廳用', zh: '這個可以續嗎', kr: '이거 리필 돼요?', pron: '伊勾 禮劈腿唷' },
+          { category: '餐廳用', zh: '請給我筷子', kr: '젓가락을 주세요', pron: '九估拉估磊 啾誰優' },
+          { category: '餐廳用', zh: '請給我湯匙', kr: '숟가락을 주세요', pron: '蘇估拉估磊 啾誰優' },
+          { category: '餐廳用', zh: '請給我帳單', kr: '계산서 주세요.', pron: 'gi三搜 啾誰優' },
+          { category: '餐廳用', zh: '我要結帳', kr: '계산할게요', pron: '給沙拿給唷' },
+          { category: '餐廳用', zh: '可以打包嗎？', kr: '포장도 되나요?', pron: '噗醬嘟土娜呦' },
+          { category: '餐廳用', zh: '請幫我外帶', kr: '포장해 주세요', pron: '噗醬嘿 啾誰優' },
+
+          // 點飲料用
+          { category: '點飲料用', zh: '美式咖啡', kr: '아메리카노', pron: '阿妹哩勘努' },
+          { category: '點飲料用', zh: '拿鐵', kr: '라떼', pron: 'ki曲' },
+          { category: '點飲料用', zh: '請幫我去冰', kr: '저를 얼음으로 가게 해 주세요.', pron: '' },
+          { category: '點飲料用', zh: '我要微糖', kr: '덜 달게 해 주세요', pron: '偷台給嘿 啾誰唷' },
+          { category: '點飲料用', zh: '我要少冰', kr: '얼음 조금만 넣어주세요', pron: '歐room球估曼no啾誰唷' },
+          { category: '點飲料用', zh: '外帶', kr: '테이크아웃', pron: '' },
+          { category: '點飲料用', zh: '請給我吸管', kr: '빨대주세요.', pron: '掰對 啾誰優' },
+
+          // 付錢用
+          { category: '付錢用', zh: '多少錢？', kr: '얼마예요?', pron: '歐媽耶唷' },
+          { category: '付錢用', zh: '可以退稅嗎？', kr: '택스프리 돼요？', pron: 'Tax free對呦？' },
+          { category: '付錢用', zh: '可以刷卡嗎？', kr: '카드 돼요?', pron: '咔嘟 對唷' },
+          { category: '付錢用', zh: '只能用現金嗎？', kr: '현금만 사용할 수 있나요?', pron: 'hyong估慢塞佣蘇一娜呦' },
+          { category: '付錢用', zh: '請給我收據', kr: '영수증 주세요.', pron: '勇蘇俊 啾誰唷' },
+
+          // 購物用
+          { category: '購物用', zh: '這個多少錢？', kr: '이거 얼마예요', pron: '一勾歐瑪耶呦' },
+          { category: '購物用', zh: '太貴了', kr: '너무 비싸요', pron: '諾木比撒呦' },
+          { category: '購物用', zh: '便宜點吧', kr: '깎아 주세요', pron: '嘎嘎主塞呦' },
+          { category: '購物用', zh: '請給我袋子', kr: '봉지를 주세요', pron: 'bong啾立 啾誰呦' },
+          { category: '購物用', zh: '我不需要袋子', kr: '봉투 필요 없어요', pron: 'bong凸批溜 歐噗搜呦' },
+          { category: '購物用', zh: '這個有折扣嗎？', kr: '이거 할인 있나요?', pron: '一勾哈拎 in娜呦' },
+          { category: '購物用', zh: '這個有尺寸嗎？', kr: '이거 사이즈가 있나요?', pron: '一勾塞啾嘎 in娜呦' },
+          { category: '購物用', zh: '有其他尺寸嗎？', kr: '다른 크기도 있나요?', pron: '他論哭gi豆 in娜呦' },
+          { category: '購物用', zh: '有小一號的嗎？', kr: '한 치수 작은 것도 있나요?', pron: '憨曲蘇 叉棍go肚 in娜呦' },
+          { category: '購物用', zh: '有大一號的嗎？', kr: '한 치수 더 큰 것이 있나요?', pron: '憨曲蘇頭睏go系 in娜呦' },
+
+          // 交通用
+          { category: '交通用', zh: '請帶我到這個地址', kr: '이 주소로 데려다 주세요.', pron: '' },
+          { category: '交通用', zh: '我要去這裡', kr: '여기 가 주세요', pron: '優gi卡主塞呦' },
+          { category: '交通用', zh: '請在這裡停車', kr: '여기 세워주세요.', pron: '呦gi誰唷啾誰唷' },
+          { category: '交通用', zh: '多少錢？', kr: '얼마예요?', pron: '歐媽耶唷' },
+          { category: '交通用', zh: '請找錢給我', kr: '돈을 저한테 찾아 주세요.', pron: '' }
+        ]
       }
     },
     computed: {
@@ -671,6 +783,12 @@
           return list.filter(item => item.category === this.filterCategory);
         }
         return list;
+      },
+      filteredKoreanList() {
+        if (this.selectedKoreanCategory === '全部') {
+          return this.koreanList;
+        }
+        return this.koreanList.filter(item => item.category === this.selectedKoreanCategory);
       },
       calculatedTwd() {
         if (!this.krwInput) return 0;
@@ -693,11 +811,24 @@
       }
     },
     methods: {
+      // 韓語發音 (TTS)
+      speakKorean(text) {
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel(); // 停止先前的發音
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.lang = 'ko-KR';
+          utterance.rate = 0.85; // 稍微放慢語速方便聽清
+          window.speechSynthesis.speak(utterance);
+        } else {
+          this.showToast('您的瀏覽器不支援語音發音');
+        }
+      },
+
       // 複製地址功能
       copyToClipboard(text) {
         if (!text) return;
         navigator.clipboard.writeText(text).then(() => {
-          this.showToast('已成功複製韓文地址！');
+          this.showToast('已成功複製！');
         }).catch(() => {
           this.showToast('複製失敗，請手動複製');
         });
