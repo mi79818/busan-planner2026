@@ -260,147 +260,92 @@
     </div>
 
     <!-- 2. 資訊頁面 -->
-    <div v-if="currentTab === 'info'" class="space-y-5">
+    <div v-if="currentTab === 'info'" class="space-y-4">
       
-      <!-- 1. 即時匯率換算 -->
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
-        <h3 class="font-bold text-gray-800 text-sm mb-3 flex items-center">
-          <i class="fa-solid fa-calculator text-ocean-dark mr-2"></i>即時匯率換算 (韓元 ➔ 台幣)
-        </h3>
-        <div class="flex items-center space-x-2">
-          <div class="flex-1">
-            <label class="text-[10px] text-gray-400">韓元 (KRW)</label>
-            <input type="number" v-model="krwInput" placeholder="例如: 10000" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-semibold outline-none focus:border-ocean">
-          </div>
-          <i class="fa-solid fa-arrow-right-arrow-left text-gray-300 mt-4"></i>
-          <div class="flex-1">
-            <label class="text-[10px] text-gray-400">約折合台幣 (TWD)</label>
-            <div class="w-full bg-ocean-light/50 border border-ocean/20 rounded-xl px-3 py-2 text-sm font-bold text-ocean-dark">
-              NT$ {{ calculatedTwd }}
-            </div>
-          </div>
-        </div>
-        <div class="text-[10px] text-gray-400 mt-2 text-right">* 預設匯率基準: 1 TWD ≈ 42 KRW (約乘 0.024)</div>
+      <!-- 功能操作列：拖曳排序開關 -->
+      <div class="flex justify-between items-center bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
+        <span class="text-xs font-bold text-gray-700">資訊卡片管理</span>
+        <button @click="toggleInfoSortMode"
+                :class="isInfoSortMode ? 'bg-amber-500 text-white animate-pulse' : 'bg-gray-100 text-gray-600'"
+                class="text-xs px-3 py-1.5 rounded-xl font-medium shadow-sm flex items-center space-x-1 transition-all">
+          <i class="fa-solid" :class="isInfoSortMode ? 'fa-check' : 'fa-arrow-down-up-lock'"></i>
+          <span>{{ isInfoSortMode ? '完成排序' : '調整卡片排序' }}</span>
+        </button>
       </div>
 
-      <!-- 2. 行前須知卡片 (調整至第二位) -->
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3">
-        <h3 class="font-bold text-gray-800 text-sm flex items-center text-amber-600">
-          <i class="fa-solid fa-triangle-exclamation mr-2 text-amber-500"></i>行前須知
-        </h3>
-        
-        <div class="space-y-2 text-xs text-gray-700 leading-relaxed">
-          <div class="bg-amber-50/60 p-3 rounded-xl border border-amber-100/80 space-y-1">
-            <div class="font-bold text-amber-800 flex items-center">
-              <i class="fa-solid fa-suitcase-rolling mr-1.5"></i>1. 隨身行李規定：
+      <!-- 資訊卡片容器 -->
+      <div id="info-card-list" class="space-y-4">
+        <div v-for="card in infoCards" :key="card.id" :data-id="card.id" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 relative group">
+          
+          <!-- 拖曳握把 -->
+          <div v-if="isInfoSortMode" class="info-drag-handle absolute top-3 left-3 text-gray-400 p-1 cursor-grab active:cursor-grabbing z-10">
+            <i class="fa-solid fa-grip-vertical text-lg"></i>
+          </div>
+
+          <!-- 卡片標題與操作區 -->
+          <div class="flex justify-between items-center mb-3" :class="isInfoSortMode ? 'pl-6' : ''">
+            <h3 class="font-bold text-gray-800 text-sm flex items-center" :class="card.titleClass">
+              <i :class="card.icon" class="mr-2"></i>{{ card.title }}
+            </h3>
+            <button @click="openEditInfoModalWithAuth(card)" class="text-gray-300 hover:text-ocean-dark p-1">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+          </div>
+
+          <!-- 卡片型態 1: 即時匯率換算 -->
+          <div v-if="card.type === 'calc'" :class="isInfoSortMode ? 'pl-6' : ''">
+            <div class="flex items-center space-x-2">
+              <div class="flex-1">
+                <label class="text-[10px] text-gray-400">韓元 (KRW)</label>
+                <input type="number" v-model="krwInput" placeholder="例如: 10000" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm font-semibold outline-none focus:border-ocean">
+              </div>
+              <i class="fa-solid fa-arrow-right-arrow-left text-gray-300 mt-4"></i>
+              <div class="flex-1">
+                <label class="text-[10px] text-gray-400">約折合台幣 (TWD)</label>
+                <div class="w-full bg-ocean-light/50 border border-ocean/20 rounded-xl px-3 py-2 text-sm font-bold text-ocean-dark">
+                  NT$ {{ calculatedTwd }}
+                </div>
+              </div>
             </div>
-            <div class="text-gray-600 pl-2 space-y-1">
-              <p>
-                <span class="text-red-500 font-bold">＊</span>行動電源、替換電池、電子煙<span class="font-semibold text-gray-800">不能放托運行李</span>，每人最多可帶2個行動電源 <span class="text-red-500 font-bold">飛機上全程禁用!!</span> 需有wh標示!!(100Wh以下)用透明夾鏈袋裝，貼絕緣膠帶在電源開關或充電口!!
-              </p>
-              <p>
-                <span class="text-red-500 font-bold">＊</span>水、飲料、食品、化妝品等液態•噴霧•凝膠體類（凝膠體或霜）每樣不超過100ml並用要透明夾鏈袋裝，每名旅客限帶1L
-              </p>
+            <div class="text-[10px] text-gray-400 mt-2 text-right">* 預設匯率基準: 1 TWD ≈ 42 KRW (約乘 0.024)</div>
+          </div>
+
+          <!-- 卡片型態 2: 自由列表/文字內容 (行前須知、餐廳重點、禁忌等) -->
+          <div v-else-if="card.type === 'list'" class="space-y-2 text-xs text-gray-700 leading-relaxed" :class="isInfoSortMode ? 'pl-6' : ''">
+            <div v-for="(sec, sIdx) in card.sections" :key="sIdx" :class="sec.boxClass || 'bg-gray-50 p-3 rounded-xl border border-gray-100'" class="space-y-1">
+              <div class="font-bold flex items-center" :class="sec.titleClass || 'text-gray-800'">
+                <i v-if="sec.icon" :class="sec.icon" class="mr-1.5"></i>{{ sec.title }}
+              </div>
+              <div class="text-gray-600 pl-2 space-y-1 whitespace-pre-line">
+                <p v-for="(line, lIdx) in sec.lines" :key="lIdx" v-html="line"></p>
+              </div>
             </div>
           </div>
 
-          <div class="bg-red-50/60 p-3 rounded-xl border border-red-100/80 space-y-1">
-            <div class="font-bold text-red-800 flex items-center">
-              <i class="fa-solid fa-capsules mr-1.5"></i>2. 藥品限制：
-            </div>
-            <p class="text-gray-600 pl-2">
-              禁止攜帶含有<span class="font-semibold text-red-600">「丙烯異丙乙酸尿」</span>成分的止痛藥入境，如 <span class="font-bold text-gray-800">EVE 止痛藥</span>。
-            </p>
-          </div>
+          <!-- 卡片型態 3: 住宿資訊 -->
+          <div v-else-if="card.type === 'accommodation'" class="space-y-3 text-xs" :class="isInfoSortMode ? 'pl-6' : ''">
+            <div v-for="(acc, aIdx) in card.items" :key="aIdx" class="bg-ocean-light/40 p-3 rounded-xl border border-ocean/20 space-y-2">
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-ocean-deep text-sm">{{ acc.name }}</span>
+                <span class="bg-ocean-dark text-white text-[10px] px-2 py-0.5 rounded-full font-medium">{{ acc.date }}</span>
+              </div>
+              
+              <div @click="copyToClipboard(acc.address)" 
+                   class="flex items-center space-x-1.5 text-gray-700 bg-white p-2 rounded-lg cursor-pointer hover:bg-gray-50 border border-gray-100 group/addr">
+                <i class="fa-solid fa-location-dot text-ocean-dark"></i>
+                <span class="font-medium flex-1">{{ acc.address }}</span>
+                <i class="fa-regular fa-copy text-[10px] text-gray-400 group-hover/addr:text-ocean-dark"></i>
+              </div>
 
-          <div class="bg-blue-50/60 p-3 rounded-xl border border-blue-100/80">
-            <div class="font-bold text-blue-800 flex items-center">
-              <i class="fa-solid fa-plug mr-1.5"></i>3. 電壓插頭：
-            </div>
-            <p class="text-gray-600 pl-2 mt-0.5">
-              韓國使用 <span class="font-semibold text-gray-800">220V 電壓</span>與<span class="font-semibold text-gray-800">圓形雙孔插頭（Type C/F）</span>。
-            </p>
-          </div>
-
-          <div class="bg-emerald-50/60 p-3 rounded-xl border border-emerald-100/80">
-            <div class="font-bold text-emerald-800 flex items-center">
-              <i class="fa-solid fa-mobile-screen-button mr-1.5"></i>4. App 下載與註冊：
-            </div>
-            <p class="text-gray-600 pl-2 mt-0.5">
-              需要用到的 App 請提前在<span class="font-semibold text-gray-800">台灣下載、註冊並綁定信用卡</span>，以免在國外收不到簡訊認證碼。
-            </p>
-          </div>
-
-          <div class="bg-purple-50/60 p-3 rounded-xl border border-purple-100/80">
-            <div class="font-bold text-purple-800 flex items-center">
-              <i class="fa-regular fa-credit-card mr-1.5"></i>5. 信用卡準備：
-            </div>
-            <p class="text-gray-600 pl-2 mt-0.5">
-              多帶幾張不同銀行跟不同卡種的信用卡（提前打電話到信用卡銀行<span class="font-semibold text-gray-800">註記國外旅遊</span>）。
-            </p>
-          </div>
-
-          <div class="bg-sky-50/60 p-3 rounded-xl border border-sky-100/80">
-            <div class="font-bold text-sky-800 flex items-center">
-              <i class="fa-solid fa-shirt mr-1.5"></i>6. 衣物穿著：
-            </div>
-            <p class="text-gray-600 pl-2 mt-0.5">
-              釜山早晚溫差大，記得<span class="font-semibold text-gray-800">隨身攜帶薄外套</span>。
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- 3. 住宿資訊 (調整至最後) -->
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 space-y-3">
-        <h3 class="font-bold text-gray-800 text-sm flex items-center text-ocean-dark">
-          <i class="fa-solid fa-bed mr-2"></i>住宿資訊
-        </h3>
-        
-        <div class="space-y-3 text-xs">
-          <!-- 廣安里民宿 -->
-          <div class="bg-ocean-light/40 p-3 rounded-xl border border-ocean/20 space-y-2">
-            <div class="flex justify-between items-center">
-              <span class="font-bold text-ocean-deep text-sm">廣安里民宿</span>
-              <span class="bg-ocean-dark text-white text-[10px] px-2 py-0.5 rounded-full font-medium">8/31 ~ 9/1 (兩晚)</span>
-            </div>
-            
-            <div @click="copyToClipboard('부산 수영구 민락수변로 49')" 
-                 class="flex items-center space-x-1.5 text-gray-700 bg-white p-2 rounded-lg cursor-pointer hover:bg-gray-50 border border-gray-100 group/addr">
-              <i class="fa-solid fa-location-dot text-ocean-dark"></i>
-              <span class="font-medium flex-1">부산 수영구 민락수변로 49</span>
-              <i class="fa-regular fa-copy text-[10px] text-gray-400 group-hover/addr:text-ocean-dark"></i>
-            </div>
-
-            <div class="flex justify-end">
-              <a href="https://naver.me/5UVeuY2u" target="_blank" class="inline-flex items-center space-x-1 text-[#03C75A] font-bold text-[11px] hover:underline">
-                <i class="fa-solid fa-map-location-dot"></i>
-                <span>NAVER 地圖查看</span>
-              </a>
+              <div class="flex justify-end">
+                <a :href="acc.naverUrl" target="_blank" class="inline-flex items-center space-x-1 text-[#03C75A] font-bold text-[11px] hover:underline">
+                  <i class="fa-solid fa-map-location-dot"></i>
+                  <span>NAVER 地圖查看</span>
+                </a>
+              </div>
             </div>
           </div>
 
-          <!-- 海雲台民宿 -->
-          <div class="bg-ocean-light/40 p-3 rounded-xl border border-ocean/20 space-y-2">
-            <div class="flex justify-between items-center">
-              <span class="font-bold text-ocean-deep text-sm">海雲台民宿</span>
-              <span class="bg-ocean-dark text-white text-[10px] px-2 py-0.5 rounded-full font-medium">9/2 ~ 9/4 (三晚)</span>
-            </div>
-            
-            <div @click="copyToClipboard('부산시 해운대해변로 298번길 29, 해운대 푸르지오시티')" 
-                 class="flex items-center space-x-1.5 text-gray-700 bg-white p-2 rounded-lg cursor-pointer hover:bg-gray-50 border border-gray-100 group/addr">
-              <i class="fa-solid fa-location-dot text-ocean-dark"></i>
-              <span class="font-medium flex-1">부산시 해운대해변로 298번길 29, 해운대 푸르지오시티</span>
-              <i class="fa-regular fa-copy text-[10px] text-gray-400 group-hover/addr:text-ocean-dark"></i>
-            </div>
-
-            <div class="flex justify-end">
-              <a href="https://naver.me/5nh1UWce" target="_blank" class="inline-flex items-center space-x-1 text-[#03C75A] font-bold text-[11px] hover:underline">
-                <i class="fa-solid fa-map-location-dot"></i>
-                <span>NAVER 地圖查看</span>
-              </a>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -600,7 +545,32 @@
     </div>
   </div>
 
-  <!-- Modal 2: 新增購物項目 -->
+  <!-- Modal 2: 編輯資訊卡片 -->
+  <div v-if="showInfoEditModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 max-h-[90vh] overflow-y-auto space-y-3">
+      <h3 class="font-bold text-base text-gray-800 mb-2">編輯資訊卡片</h3>
+
+      <div>
+        <label class="text-xs text-gray-500">卡片標題</label>
+        <input type="text" v-model="editingCard.title" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      </div>
+
+      <div v-if="editingCard.type === 'list'" class="space-y-3">
+        <label class="text-xs text-gray-500 block font-bold">區塊內容編輯</label>
+        <div v-for="(sec, sIdx) in editingCard.sections" :key="sIdx" class="p-3 bg-gray-50 rounded-xl space-y-2 border border-gray-200">
+          <input type="text" v-model="sec.title" placeholder="區塊小標題" class="w-full border rounded-lg p-1.5 text-xs font-bold bg-white outline-none">
+          <textarea v-model="sec.rawContent" placeholder="內文（每行一項）" class="w-full border rounded-lg p-2 text-xs bg-white outline-none h-24"></textarea>
+        </div>
+      </div>
+
+      <div class="flex space-x-2 pt-3">
+        <button @click="showInfoEditModal = false" class="flex-1 bg-gray-100 text-gray-600 rounded-xl py-3 text-xs font-bold">取消</button>
+        <button @click="saveInfoCard" class="flex-1 bg-ocean-dark text-white rounded-xl py-3 text-xs font-bold">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: 新增購物項目 -->
   <div v-if="showShoppingModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-3">
       <h3 class="font-bold text-base text-gray-800 mb-2">新增購物欲買清單</h3>
@@ -637,7 +607,7 @@
     </div>
   </div>
 
-  <!-- Modal 3: 新增花費記帳 -->
+  <!-- Modal 4: 新增花費記帳 -->
   <div v-if="showExpenseModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-3">
       <h3 class="font-bold text-base text-gray-800 mb-2">新增花費記帳</h3>
@@ -700,21 +670,24 @@
         selectedKoreanCategory: '全部',
         krwInput: null,
         toastMessage: '',
-        previewImageUrl: null, // 大圖預覽用
+        previewImageUrl: null,
         showItineraryModal: false,
         showShoppingModal: false,
         showExpenseModal: false,
+        showInfoEditModal: false,
         isEditMode: false,
         isSortMode: false,
+        isInfoSortMode: false,
         sortableInstance: null,
+        infoSortableInstance: null,
         modalItem: { photos: [] },
+        editingCard: { sections: [] },
         shoppingList: [],
         expenses: [],
         newShopping: { name: '', location: '', note: '', image: '', isBought: false },
         quickLocations: ['樂天超市', 'Olive Young', '國際市場', '大創', '免稅店', '便利商店'],
         newExpense: { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0] },
 
-        // 加入體感溫度 (feelsLike)
         weather: { temp: 26, feelsLike: 28, desc: '多雲晴朗', pop: 10, wind: 2.1 },
 
         days: [
@@ -740,6 +713,172 @@
           ]
         },
 
+        // 資訊頁面可編輯卡片列表
+        infoCards: [
+          {
+            id: 'info-calc',
+            type: 'calc',
+            title: '即時匯率換算 (韓元 ➔ 台幣)',
+            icon: 'fa-solid fa-calculator text-ocean-dark',
+            titleClass: 'text-gray-800'
+          },
+          {
+            id: 'info-notice',
+            type: 'list',
+            title: '行前須知',
+            icon: 'fa-solid fa-triangle-exclamation text-amber-500',
+            titleClass: 'text-amber-600',
+            sections: [
+              {
+                title: '1. 隨身行李規定：',
+                icon: 'fa-solid fa-suitcase-rolling',
+                titleClass: 'text-amber-800',
+                boxClass: 'bg-amber-50/60 p-3 rounded-xl border border-amber-100/80',
+                lines: [
+                  '<span class="text-red-500 font-bold">＊</span>行動電源、替換電池、電子煙<span class="font-semibold text-gray-800">不能放托運行李</span>，每人最多可帶2個行動電源 <span class="text-red-500 font-bold">飛機上全程禁用!!</span> 需有wh標示!!(100Wh以下)用透明夾鏈袋裝，貼絕緣膠帶在電源開關或充電口!!',
+                  '<span class="text-red-500 font-bold">＊</span>水、飲料、食品、化妝品等液態•噴霧•凝膠體類（凝膠體或霜）每樣不超過100ml並用要透明夾鏈袋裝，每名旅客限帶1L'
+                ]
+              },
+              {
+                title: '2. 藥品限制：',
+                icon: 'fa-solid fa-capsules',
+                titleClass: 'text-red-800',
+                boxClass: 'bg-red-50/60 p-3 rounded-xl border border-red-100/80',
+                lines: ['禁止攜帶含有<span class="font-semibold text-red-600">「丙烯異丙乙酸尿」</span>成分的止痛藥入境，如 <span class="font-bold text-gray-800">EVE 止痛藥</span>。']
+              },
+              {
+                title: '3. 電壓插頭：',
+                icon: 'fa-solid fa-plug',
+                titleClass: 'text-blue-800',
+                boxClass: 'bg-blue-50/60 p-3 rounded-xl border border-blue-100/80',
+                lines: ['韓國使用 <span class="font-semibold text-gray-800">220V 電壓</span>與<span class="font-semibold text-gray-800">圓形雙孔插頭（Type C/F）</span>。']
+              },
+              {
+                title: '4. App 下載與註冊：',
+                icon: 'fa-solid fa-mobile-screen-button',
+                titleClass: 'text-emerald-800',
+                boxClass: 'bg-emerald-50/60 p-3 rounded-xl border border-emerald-100/80',
+                lines: ['需要用到的 App 請提前在<span class="font-semibold text-gray-800">台灣下載、註冊並綁定信用卡</span>，以免在國外收不到簡訊認證碼。']
+              },
+              {
+                title: '5. 信用卡準備：',
+                icon: 'fa-regular fa-credit-card',
+                titleClass: 'text-purple-800',
+                boxClass: 'bg-purple-50/60 p-3 rounded-xl border border-purple-100/80',
+                lines: ['多帶幾張不同銀行跟不同卡種的信用卡（提前打電話到信用卡銀行<span class="font-semibold text-gray-800">註記國外旅遊</span>）。']
+              },
+              {
+                title: '6. 衣物穿著：',
+                icon: 'fa-solid fa-shirt',
+                titleClass: 'text-sky-800',
+                boxClass: 'bg-sky-50/60 p-3 rounded-xl border border-sky-100/80',
+                lines: ['釜山早晚溫差大，記得<span class="font-semibold text-gray-800">隨身攜帶薄外套</span>。']
+              }
+            ]
+          },
+          {
+            id: 'info-restaurant',
+            type: 'list',
+            title: '韓國餐廳重點整理',
+            icon: 'fa-solid fa-utensils text-orange-500',
+            titleClass: 'text-orange-600',
+            sections: [
+              {
+                title: '✔ 先找位子坐',
+                boxClass: 'bg-orange-50/50 p-3 rounded-xl border border-orange-100',
+                lines: ['→ 大部分餐廳都是先跟店員點個頭、自己找喜歡的位置坐下就可以了。']
+              },
+              {
+                title: '✔ 點餐方式：點餐機／平板／店員',
+                boxClass: 'bg-orange-50/50 p-3 rounded-xl border border-orange-100',
+                lines: [
+                  '→ 有點餐機（Kiosk） 的話，先點餐、付款，再找位子坐。',
+                  '→ 桌上有平板 的話，直接用平板點餐就可以。',
+                  '→ 如果兩個都沒有，就等店員過來，或直接說 「저기요(秋gi唷)」 叫店員即可。'
+                ]
+              },
+              {
+                title: '✔ 水先看有沒有自助吧',
+                boxClass: 'bg-orange-50/50 p-3 rounded-xl border border-orange-100',
+                lines: ['→ 有些餐廳會送水，但也有很多是自己去自助吧裝水。']
+              },
+              {
+                title: '✔ 餐具、衛生紙先找桌子抽屜',
+                boxClass: 'bg-orange-50/50 p-3 rounded-xl border border-orange-100',
+                lines: ['→ 韓國很多餐廳會把筷子、湯匙和衛生紙放在桌子抽屜裡，第一次來的人很容易找不到。']
+              },
+              {
+                title: '✔ 小菜很多都可以免費續',
+                boxClass: 'bg-orange-50/50 p-3 rounded-xl border border-orange-100',
+                lines: ['→ 尤其是韓式定食、湯飯店、烤肉店最常見。如果不夠，可以直接跟店員說。']
+              },
+              {
+                title: '✔ 找店員前先看 有沒有服務鈴',
+                boxClass: 'bg-orange-50/50 p-3 rounded-xl border border-orange-100',
+                lines: ['→ 如果有服務鈴，直接按就可以了。如果沒有，再叫店員。']
+              },
+              {
+                title: '✔ 廁所先問 密碼或鑰匙',
+                boxClass: 'bg-orange-50/50 p-3 rounded-xl border border-orange-100',
+                lines: ['→ 很多咖啡廳、小餐廳使用的是大樓共用廁所，需要密碼或鑰匙，先問店員最快。(密碼通常印在你的「消費收據」最下面，或者是掛在櫃檯的一個大鑰匙圈上。)']
+              },
+              {
+                title: '✔ 吃完到 櫃台結帳',
+                boxClass: 'bg-orange-50/50 p-3 rounded-xl border border-orange-100',
+                lines: ['→ 吃完直接走到櫃台結帳就可以了。不過也有些餐廳是點餐時就先付款。']
+              },
+              {
+                title: '✔ 韓國餐點份量比較多',
+                boxClass: 'bg-orange-50/50 p-3 rounded-xl border border-orange-100',
+                lines: ['→ 除非有規定一人一份主餐或是速食店/套餐這些例外，其餘餐廳就先2個人點一份（三個人點兩份 依次類推），酒水可以按人頭點']
+              }
+            ]
+          },
+          {
+            id: 'info-taboo',
+            type: 'list',
+            title: '韓國旅遊知識或禁忌',
+            icon: 'fa-solid fa-ban text-red-500',
+            titleClass: 'text-red-600',
+            sections: [
+              {
+                title: '注意事項',
+                boxClass: 'bg-red-50/50 p-3 rounded-xl border border-red-100',
+                lines: [
+                  '✔ 禁止室內、邊走邊抽菸',
+                  '✔ 未經同意不能拍攝他人',
+                  '✔ 超商店內外不可飲酒',
+                  '✔ 公車不能飲食也不能帶飲料',
+                  '✔ 結帳時請把錢交店員，別放桌上',
+                  '✔ 吃飯不端碗',
+                  '✔ 在外找廁所要搜尋「개방화장실（開放廁所）」或去地鐵站、百貨公司'
+                ]
+              }
+            ]
+          },
+          {
+            id: 'info-acc',
+            type: 'accommodation',
+            title: '住宿資訊',
+            icon: 'fa-solid fa-bed text-ocean-dark',
+            titleClass: 'text-ocean-dark',
+            items: [
+              {
+                name: '廣安里民宿',
+                date: '8/31 ~ 9/1 (兩晚)',
+                address: '부산 수영구 민락수변로 49',
+                naverUrl: 'https://naver.me/5UVeuY2u'
+              },
+              {
+                name: '海雲台民宿',
+                date: '9/2 ~ 9/4 (三晚)',
+                address: '부산시 해운대해변로 298번길 29, 해운대 푸르지오시티',
+                naverUrl: 'https://naver.me/5nh1UWce'
+              }
+            ]
+          }
+        ],
+
         koreanList: [
           // 日常用
           { category: '日常用', zh: '你好', kr: '안녕하세요', pron: '安妞哈誰呦' },
@@ -748,6 +887,7 @@
           { category: '日常用', zh: '辛苦了', kr: '수고하셨습니다', pron: '蘇ga啾斯密達' },
           { category: '日常用', zh: '不好意思、對不起', kr: '죄송합니다', pron: '啾送哈密達' },
           { category: '日常用', zh: '廁所在哪？', kr: '화장실 어디예요?', pron: '花張西 歐迪耶唷' },
+          { category: '日常用', zh: '有密碼或鑰匙嗎？', kr: '비밀번호나 열쇠가 있나요?', pron: 'pi咪崩號拿 悠些嘎 in拿呦' },
           { category: '日常用', zh: '是', kr: '네', pron: 'ㄋㄟˉ' },
           { category: '日常用', zh: '不是', kr: '아니요', pron: '阿ni呦' },
           { category: '日常用', zh: '請給我', kr: '주세요', pron: '啾誰呦' },
@@ -768,6 +908,7 @@
           { category: '餐廳用', zh: '請推薦一下', kr: '추천해 주세요', pron: 'chu秋捏 朱塞唷' },
           { category: '餐廳用', zh: '請給我這個', kr: '이거 주세요', pron: '伊勾 朱塞唷' },
           { category: '餐廳用', zh: '請給我水', kr: '물 주세요.', pron: '母 炯 朱塞唷' },
+          { category: '餐廳用', zh: '能再給我一點小菜嗎？', kr: '반찬을 조금 더 주시겠어요?', pron: '盤千烏 糾金 偷 朱洗給搜呦' },
           { category: '餐廳用', zh: '不要辣', kr: '맵지 마세요', pron: '安 妹給 嘿啾誰優' },
           { category: '餐廳用', zh: '有不辣的嗎？', kr: '안 매운 것도 있나요?', pron: '安maeun溝嘟in娜呦' },
           { category: '餐廳用', zh: '這個可以續嗎', kr: '이거 리필 돼요?', pron: '伊勾 禮劈腿唷' },
@@ -986,6 +1127,59 @@
           let dayList = this.itineraryData[this.selectedDayIndex] || [];
           this.itineraryData[this.selectedDayIndex] = dayList.filter(i => i.id !== this.modalItem.id);
           this.showItineraryModal = false;
+        }
+      },
+
+      // 編輯資訊頁面卡片
+      openEditInfoModalWithAuth(card) {
+        if (this.checkPassword()) {
+          this.editingCard = JSON.parse(JSON.stringify(card));
+          if (this.editingCard.type === 'list') {
+            this.editingCard.sections.forEach(sec => {
+              sec.rawContent = sec.lines ? sec.lines.join('\n') : '';
+            });
+          }
+          this.showInfoEditModal = true;
+        }
+      },
+
+      // 儲存資訊卡片內容
+      saveInfoCard() {
+        const idx = this.infoCards.findIndex(c => c.id === this.editingCard.id);
+        if (idx !== -1) {
+          if (this.editingCard.type === 'list') {
+            this.editingCard.sections.forEach(sec => {
+              sec.lines = sec.rawContent ? sec.rawContent.split('\n').filter(l => l.trim() !== '') : [];
+            });
+          }
+          this.infoCards[idx] = this.editingCard;
+        }
+        this.showInfoEditModal = false;
+        this.showToast('卡片編輯成功！');
+      },
+
+      // 切換資訊卡片排序模式
+      toggleInfoSortMode() {
+        this.isInfoSortMode = !this.isInfoSortMode;
+        if (this.isInfoSortMode) {
+          this.$nextTick(() => {
+            const el = document.getElementById('info-card-list');
+            if (el && !this.infoSortableInstance) {
+              this.infoSortableInstance = Sortable.create(el, {
+                handle: '.info-drag-handle',
+                animation: 150,
+                onEnd: (evt) => {
+                  const list = [...this.infoCards];
+                  const movedItem = list.splice(evt.oldIndex, 1)[0];
+                  list.splice(evt.newIndex, 0, movedItem);
+                  this.infoCards = list;
+                }
+              });
+            }
+          });
+        } else if (this.infoSortableInstance) {
+          this.infoSortableInstance.destroy();
+          this.infoSortableInstance = null;
         }
       },
 
