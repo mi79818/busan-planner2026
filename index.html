@@ -590,7 +590,7 @@
         </div>
       </div>
 
-      <!-- 上傳購物商品圖片功能 (修改項目 1) -->
+      <!-- 上傳購物商品圖片功能 -->
       <div>
         <label class="text-xs text-gray-500 block mb-1">商品圖片 (選填)</label>
         <input type="file" ref="shoppingFileInput" @change="handleShoppingFileUpload" accept="image/*" class="hidden">
@@ -916,6 +916,7 @@
           { category: '餐廳用', zh: '我要點餐', kr: '주문할게요', pron: '出mu拿給唷' },
           { category: '餐廳用', zh: '請推薦一下', kr: '추천해 주세요', pron: 'chu秋捏 朱塞唷' },
           { category: '餐廳用', zh: '請給我這個', kr: '이거 주세요', pron: '伊勾 朱塞唷' },
+          { category: '餐廳用', zh: '可以再加點嗎？', kr: '추가로 주문해도 될까요?', pron: '秋嘎漏 祝問黑豆 堆卡呦' },
           { category: '餐廳用', zh: '請給我水', kr: '물 주세요.', pron: '母 炯 朱塞唷' },
           { category: '餐廳用', zh: '能再給我一點小菜嗎？', kr: '반찬을 조금 더 주시겠어요?', pron: '盤千烏 糾金 偷 朱洗給搜呦' },
           { category: '餐廳用', zh: '不要辣', kr: '맵지 마세요', pron: '安 妹給 嘿啾誰優' },
@@ -1068,7 +1069,6 @@
         reader.readAsDataURL(file);
       },
 
-      // 購物商品圖片上傳處理 (修改項目 1)
       handleShoppingFileUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -1157,7 +1157,6 @@
         this.showToast('卡片編輯成功！');
       },
 
-      // 資訊頁面排序切換 (修改項目 2：加入密碼驗證)
       toggleInfoSortMode() {
         if (!this.isInfoSortMode) {
           if (!this.checkPassword()) return;
