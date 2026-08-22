@@ -473,15 +473,16 @@
     <!-- 5. 花費記帳頁面 -->
     <div v-if="currentTab === 'expenses'" class="space-y-4">
       
-      <!-- 篩選列 (需求1: 可篩選日期及類別) -->
-      <div class="flex flex-col gap-2.5 bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
-  <div>
-    <label class="text-[10px] text-gray-400 block mb-1">日期</label>
-    <input type="date" v-model="expenseFilterDate" class="w-full bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-xl px-2.5 py-2 outline-none focus:border-ocean">
+      <!-- 篩選列：極簡雙欄版 -->
+<div class="grid grid-cols-2 gap-2 bg-white p-2.5 rounded-2xl shadow-sm border border-gray-100">
+  <div class="min-w-0">
+    <label class="text-[10px] text-gray-400 block mb-0.5">日期</label>
+    <!-- 使用 text-[11px] 與 px-1 確保日期字串不溢出 -->
+    <input type="date" v-model="expenseFilterDate" class="w-full min-w-0 bg-gray-50 border border-gray-200 text-gray-700 text-[11px] rounded-lg px-1 py-1.5 outline-none focus:border-ocean appearance-none">
   </div>
-  <div>
-    <label class="text-[10px] text-gray-400 block mb-1">類別</label>
-    <select v-model="expenseFilterCategory" class="w-full bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-xl px-2.5 py-2 outline-none focus:border-ocean">
+  <div class="min-w-0">
+    <label class="text-[10px] text-gray-400 block mb-0.5">類別</label>
+    <select v-model="expenseFilterCategory" class="w-full min-w-0 bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-lg px-1.5 py-1.5 outline-none focus:border-ocean truncate">
       <option value="全部">全部類別</option>
       <option value="飲食">飲食</option>
       <option value="購物">購物</option>
