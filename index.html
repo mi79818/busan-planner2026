@@ -9,7 +9,7 @@
   <!-- Vue 3 CDN -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-fontawesome/6.4.0/css/all.min.css">
   <!-- SortableJS (拖曳排序) -->
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <!-- Google Fonts 日系字體 -->
@@ -595,6 +595,22 @@
         <input type="text" v-model="newShopping.image" placeholder="https://..." class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
       </div>
 
+      <!-- 新增：上傳圖片功能 -->
+      <div>
+        <label class="text-xs text-gray-500 block mb-1">或 上傳商品圖片</label>
+        <input type="file" ref="shoppingFileInput" @change="handleShoppingFileUpload" accept="image/*" class="hidden">
+        <button @click="$refs.shoppingFileInput.click()" class="w-full border border-dashed border-gray-300 rounded-xl p-2 text-xs text-gray-600 bg-gray-50 hover:bg-gray-100 flex items-center justify-center space-x-1">
+          <i class="fa-solid fa-camera text-ocean-dark"></i>
+          <span>選擇並上傳圖片</span>
+        </button>
+        <div v-if="newShopping.image" class="mt-2 relative inline-block">
+          <img :src="newShopping.image" class="w-16 h-16 object-cover rounded-lg border border-gray-200">
+          <button @click="newShopping.image = ''" class="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-[10px] flex items-center justify-center shadow">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
       <div>
         <label class="text-xs text-gray-500">備註 (選填)</label>
         <input type="text" v-model="newShopping.note" placeholder="數量、色號等" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
@@ -1059,7 +1075,7 @@
         }
       },
 
-      // 上傳圖片處理 (轉 Base64)
+      // 上傳圖片處理 (轉 Base64) - 行程卡片
       handleFileUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
@@ -1070,6 +1086,18 @@
             this.modalItem.photos = [];
           }
           this.modalItem.photos.push(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      },
+
+      // 上傳圖片處理 (轉 Base64) - 購物清單
+      handleShoppingFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.newShopping.image = e.target.result;
         };
         reader.readAsDataURL(file);
       },
@@ -1158,8 +1186,11 @@
         this.showToast('卡片編輯成功！');
       },
 
-      // 切換資訊卡片排序模式
+      // 切換資訊卡片排序模式 (加上密碼驗證)
       toggleInfoSortMode() {
+        if (!this.isInfoSortMode) {
+          if (!this.checkPassword()) return;
+        }
         this.isInfoSortMode = !this.isInfoSortMode;
         if (this.isInfoSortMode) {
           this.$nextTick(() => {
