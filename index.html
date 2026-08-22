@@ -245,7 +245,7 @@
 
           </div>
 
-          <!-- 交通時間卡片 -->
+          <!-- 交通時間與預估費用卡片 (修正處：增加車費顯示與設定) -->
           <div v-if="idx < currentDayItinerary.length - 1 && !isSortMode" class="flex items-center justify-center py-1">
             <div class="flex items-center space-x-2 bg-white/80 border border-gray-200 px-3 py-1.5 rounded-full text-xs text-gray-600 shadow-sm">
               <button @click="changeTransitMode(item)" class="flex items-center space-x-1 font-semibold text-ocean-dark hover:opacity-80">
@@ -257,6 +257,14 @@
                 <span>{{ item.transitTime || '15' }} 分鐘</span>
                 <i class="fa-solid fa-pen text-[10px] text-gray-400"></i>
               </button>
+              <!-- 若為計程車則顯示預估車資 -->
+              <template v-if="(item.transitMode || '計程車') === '計程車'">
+                <span class="text-gray-300">|</span>
+                <button @click="editTaxiFee(item)" class="flex items-center space-x-1 hover:text-ocean-dark text-amber-600 font-medium">
+                  <span>₩{{ item.taxiFee ? Number(item.taxiFee).toLocaleString() : '未設定' }}</span>
+                  <i class="fa-solid fa-pen text-[10px] text-amber-400"></i>
+                </button>
+              </template>
             </div>
           </div>
 
@@ -592,6 +600,11 @@
       </div>
 
       <div>
+        <label class="text-xs text-gray-500">預估計程車費 (韓元 KRW)</label>
+        <input type="number" v-model="modalItem.taxiFee" placeholder="例如: 6600" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+      </div>
+
+      <div>
         <label class="text-xs text-gray-500">特色 & 備註</label>
         <textarea v-model="modalItem.note" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none h-20"></textarea>
       </div>
@@ -846,43 +859,43 @@
 
         itineraryData: {
           0: [
-            { id: 101, category: '航班', title: '台北(桃園) ➔ 釜山', time: '13:30~17:05', flightNo: 'BX 794', depCode: 'TPE', depTime: '13:30', arrCode: 'PUS', arrTime: '17:05', duration: '2h 35m', transitMode: '計程車', transitTime: '40', photos: [] },
-            { id: 102, category: '其他', title: '領取物資', time: '18:30~19:00', note: '活動區拿禮物、LG U+ SIM卡、領釜山Pass', transitMode: '計程車', transitTime: '30', photos: [] },
-            { id: 103, category: '住宿', title: '廣安里民宿放行李', time: '19:00~20:00', address: '부산 수영구 민락수변로 49', naverUrl: 'https://naver.me/5UVeuY2u', transitMode: '走路', transitTime: '10', photos: [] },
-            { id: 104, category: '美食', title: '고결 稻草烤牛肋排', time: '20:00~22:00', openHours: '16:00~24:00', address: '부산 수영구 광안해변로255번길 50 1~2층', naverUrl: 'https://naver.me/xqbUlk43', transitMode: '走路', transitTime: '5', photos: [] },
+            { id: 101, category: '航班', title: '台北(桃園) ➔ 釜山', time: '13:30~17:05', flightNo: 'BX 794', depCode: 'TPE', depTime: '13:30', arrCode: 'PUS', arrTime: '17:05', duration: '2h 35m', transitMode: '計程車', transitTime: '40', taxiFee: '', photos: [] },
+            { id: 102, category: '其他', title: '領取物資', time: '18:30~19:00', note: '活動區拿禮物、LG U+ SIM卡、領釜山Pass', transitMode: '計程車', transitTime: '30', taxiFee: '', photos: [] },
+            { id: 103, category: '住宿', title: '廣安里民宿放行李', time: '19:00~20:00', address: '부산 수영구 민락수변로 49', naverUrl: 'https://naver.me/5UVeuY2u', transitMode: '走路', transitTime: '10', taxiFee: '', photos: [] },
+            { id: 104, category: '美食', title: '고결 稻草烤牛肋排', time: '20:00~22:00', openHours: '16:00~24:00', address: '부산 수영구 광안해변로255번길 50 1~2층', naverUrl: 'https://naver.me/xqbUlk43', transitMode: '走路', transitTime: '5', taxiFee: '', photos: [] },
             { id: 105, category: '購物', title: 'CU超商買隔天早餐', time: '22:00~', photos: [] }
           ],
           1: [
-            { id: 201, category: '景點', title: '송도 베이스테이션(해상케이블카) 松島纜車', time: '10:10~12:00', openHours: '09:00~22:00', address: '부산 서구 송도해변로 171', naverUrl: 'https://naver.me/FvTJ9azl', transitMode: '計程車', transitTime: '30', photos: [] },
-            { id: 202, category: '美食', title: '午餐：태종대짬뽕 太宗台炒瑪麵', time: '12:30~14:00', openHours: '09:30~21:30，週三休息', address: '부산 영도구 태종로 805 태짬', naverUrl: 'https://naver.me/5MvcLg2O', transitMode: '計程車', transitTime: '15', photos: [] },
-            { id: 203, category: '景點', title: '흰여울문화마을 白淺灘文化村', time: '14:00~16:00', note: '下車地點：해빙모먼트 Having moment咖啡店 (店家通常都是11點才開)', address: '부산 영도구 절영로 196 해빙모먼트', naverUrl: 'https://naver.me/GXFV1HpJ', transitMode: '計程車', transitTime: '40', photos: [] },
-            { id: 204, category: '景點', title: '回廣安里逛逛 / 晚餐：이낙에산다 광안리본점 章腸蝦鍋', time: '17:00~20:00', note: '下車地點：광안리관광안내소 廣安里旅遊諮詢處 (https://naver.me/xzxmTb5m)', address: '부산 수영구 남천바다로10번길 68 1층 이낙에산다', naverUrl: 'https://naver.me/xSBoXG2G', transitMode: '計程車', transitTime: '25', photos: [] },
-            { id: 205, category: '景點', title: '彈性行程2選1：황령산 봉수대 荒嶺山夜景 或 廣安里海邊', time: '20:00~', address: '부산 부산진구 전포동 산50-18', naverUrl: 'https://naver.me/xNpbw4Xw', transitMode: '計程車', transitTime: '10', photos: [] },
-            { id: 206, category: '美食', title: '宵夜2選1：맹구포차 居酒屋 或 푸라닭 PURADAK炸雞', time: '22:00~', openHours: '居酒屋: 18:00~04:00 / 炸雞: 12:00~24:00', note: '炸雞車程約10分(₩6,600)(可叫外送)，推薦口味:黑蒜炸雞/烤玉米起司/墨西哥辣椒', address: '부산 수영구 남천바다로33번길 72 1층 (居酒屋) / 부산 수영구 광안해변로 446 (炸雞)', naverUrl: 'https://naver.me/Fz8CYxyt', photos: [] }
+            { id: 201, category: '景點', title: '송도 베이스테이션(해상케이블카) 松島纜車', time: '10:10~12:00', openHours: '09:00~22:00', address: '부산 서구 송도해변로 171', naverUrl: 'https://naver.me/FvTJ9azl', transitMode: '計程車', transitTime: '30', taxiFee: '', photos: [] },
+            { id: 202, category: '美食', title: '午餐：태종대짬뽕 太宗台炒瑪麵', time: '12:30~14:00', openHours: '09:30~21:30，週三休息', address: '부산 영도구 태종로 805 태짬', naverUrl: 'https://naver.me/5MvcLg2O', transitMode: '計程車', transitTime: '15', taxiFee: '', photos: [] },
+            { id: 203, category: '景點', title: '흰여울문화마을 白淺灘文化村', time: '14:00~16:00', note: '下車地點：해빙모먼트 Having moment咖啡店 (店家通常都是11點才開)', address: '부산 영도구 절영로 196 해빙모먼트', naverUrl: 'https://naver.me/GXFV1HpJ', transitMode: '計程車', transitTime: '40', taxiFee: '', photos: [] },
+            { id: 204, category: '景點', title: '回廣安里逛逛 / 晚餐：이낙에산다 광안리본점 章腸蝦鍋', time: '17:00~20:00', note: '下車地點：광안리관광안내소 廣安里旅遊諮詢處 (https://naver.me/xzxmTb5m)', address: '부산 수영구 남천바다로10번길 68 1층 이낙에산다', naverUrl: 'https://naver.me/xSBoXG2G', transitMode: '計程車', transitTime: '25', taxiFee: '', photos: [] },
+            { id: 205, category: '景點', title: '彈性行程2選1：황령산 봉수대 荒嶺山夜景 或 廣安里海邊', time: '20:00~', address: '부산 부산진구 전포동 산50-18', naverUrl: 'https://naver.me/xNpbw4Xw', transitMode: '計程車', transitTime: '10', taxiFee: '', photos: [] },
+            { id: 206, category: '美食', title: '宵夜2選1：맹구포차 居酒屋 或 푸라닭 PURADAK炸雞', time: '22:00~', openHours: '居酒屋: 18:00~04:00 / 炸雞: 12:00~24:00', note: '炸雞車程約10分(₩6,600)(可叫外送)，推薦口味:黑蒜炸雞/烤玉米起司/墨西哥辣椒', address: '부산 수영구 남천바다로33번길 72 1층 (居酒屋) / 부산 수영구 광안해변로 446 (炸雞)', naverUrl: 'https://naver.me/Fz8CYxyt', taxiFee: '6600', photos: [] }
           ],
           2: [
-            { id: 301, category: '景點', title: '감천문화마을 甘川洞文化村 & ibgogage韓服體驗', time: '09:30~12:00', note: '一日包車。10:00後店家才有開。韓服體驗可憑釜山Pass兌換(天氣熱就不體驗)', address: '부산 사하구 감내2로 180-1 입고가게', naverUrl: 'https://naver.me/IItc6HR9', transitMode: '計程車', transitTime: '10', photos: [] },
-            { id: 302, category: '美食', title: '부평깡통시장 富平罐頭市場 (午餐：일신 명품 한우 名品韓牛)', time: '12:00~15:00', openHours: '名品韓牛: 11:00~21:30', note: '含國際市場逛棉被 (영일침구 永一寢具: 부산 중구 중구로 36 국제시장 4공구 B동 1층 / https://naver.me/513kXLnQ)', address: '부산 중구 중구로43번길 42 일신명품한우', naverUrl: 'https://naver.me/x4FLdDfi', transitMode: '計程車', transitTime: '30', photos: [] },
-            { id: 303, category: '住宿', title: '到海雲台民宿放行李', time: '15:30~16:15', address: '부산시 해운대해변로 298번길 29, 해운대 푸르지오시티', naverUrl: 'https://naver.me/5nh1UWce', transitMode: '計程車', transitTime: '25', photos: [] },
-            { id: 304, category: '景點', title: '해동용궁사 海東龍宮', time: '17:00~18:00', openHours: '04:00~19:20', address: '부산 기장군 기장읍 용궁길 86 해동용궁사', naverUrl: 'https://naver.me/58NdWaSm', transitMode: '計程車', transitTime: '21', photos: [] },
+            { id: 301, category: '景點', title: '감천문화마을 甘川洞文化村 & ibgogage韓服體驗', time: '09:30~12:00', note: '一日包車。10:00後店家才有開。韓服體驗可憑釜山Pass兌換(天氣熱就不體驗)', address: '부산 사하구 감내2로 180-1 입고가게', naverUrl: 'https://naver.me/IItc6HR9', transitMode: '計程車', transitTime: '10', taxiFee: '', photos: [] },
+            { id: 302, category: '美食', title: '부평깡통시장 富平罐頭市場 (午餐：일신 명품 한우 名品韓牛)', time: '12:00~15:00', openHours: '名品韓牛: 11:00~21:30', note: '含國際市場逛棉被 (영일침구 永一寢具: 부산 중구 중구로 36 국제시장 4공구 B동 1층 / https://naver.me/513kXLnQ)', address: '부산 중구 중구로43번길 42 일신명품한우', naverUrl: 'https://naver.me/x4FLdDfi', transitMode: '計程車', transitTime: '30', taxiFee: '', photos: [] },
+            { id: 303, category: '住宿', title: '到海雲台民宿放行李', time: '15:30~16:15', address: '부산시 해운대해변로 298번길 29, 해운대 푸르지오시티', naverUrl: 'https://naver.me/5nh1UWce', transitMode: '計程車', transitTime: '25', taxiFee: '', photos: [] },
+            { id: 304, category: '景點', title: '해동용궁사 海東龍宮', time: '17:00~18:00', openHours: '04:00~19:20', address: '부산 기장군 기장읍 용궁길 86 해동용궁사', naverUrl: 'https://naver.me/58NdWaSm', transitMode: '計程車', transitTime: '21', taxiFee: '', photos: [] },
             { id: 305, category: '美食', title: '晚餐：기장명품대게 名品巨蟹', time: '18:30~20:00', openHours: '10:00~21:00', note: '18:30包車結束', address: '부산 기장군 기장읍 차성동로73번길 5', naverUrl: 'https://naver.me/FY3z1DKO', photos: [] }
           ],
           3: [
-            { id: 401, category: '美食', title: '早餐：조선대가곰탕 해운대미포점 牛骨湯', time: '09:30~11:00', openHours: '08:00~21:00', address: '부산 해운대구 달맞이길62번길 9-1 조선대가곰탕', naverUrl: 'https://naver.me/xSBoXg2J', transitMode: '走路', transitTime: '10', photos: [] },
-            { id: 402, category: '景點', title: '膠囊列車：尾浦站到青沙浦站', time: '11:30~12:00', note: '到冰淇淋店(젤라또조이 해운대미포점)旁的廣場步道進到車站', address: '부산 해운대구 달맞이길62번길 17 1층', naverUrl: 'https://naver.me/5UVeuQ8A', transitMode: '坐公車', transitTime: '30', photos: [] },
-            { id: 403, category: '景點', title: '青沙浦站換票', time: '12:00~13:00', note: '青沙浦站到站後，去海岸列車站換票', address: '부산 해운대구 청사포로 116 청사포정거장', naverUrl: 'https://naver.me/xq3aEIjM', transitMode: '走路', transitTime: '5', photos: [] },
-            { id: 404, category: '美食', title: '午餐：청사포쌀국수 青沙浦河粉', time: '13:00~15:00', openHours: '10:00~18:00', address: '부산 해운대구 청사포로128번길 6 청사포쌀국수', naverUrl: 'https://naver.me/Fx2wpuxl', transitMode: '坐公車', transitTime: '15', photos: [] },
+            { id: 401, category: '美食', title: '早餐：조선대가곰탕 해운대미포점 牛骨湯', time: '09:30~11:00', openHours: '08:00~21:00', address: '부산 해운대구 달맞이길62번길 9-1 조선대가곰탕', naverUrl: 'https://naver.me/xSBoXg2J', transitMode: '走路', transitTime: '10', taxiFee: '', photos: [] },
+            { id: 402, category: '景點', title: '膠囊列車：尾浦站到青沙浦站', time: '11:30~12:00', note: '到冰淇淋店(젤라또조이 해운대미포점)旁的廣場步道進到車站', address: '부산 해운대구 달맞이길62번길 17 1층', naverUrl: 'https://naver.me/5UVeuQ8A', transitMode: '坐公車', transitTime: '30', taxiFee: '', photos: [] },
+            { id: 403, category: '景點', title: '青沙浦站換票', time: '12:00~13:00', note: '青沙浦站到站後，去海岸列車站換票', address: '부산 해운대구 청사포로 116 청사포정거장', naverUrl: 'https://naver.me/xq3aEIjM', transitMode: '走路', transitTime: '5', taxiFee: '', photos: [] },
+            { id: 404, category: '美食', title: '午餐：청사포쌀국수 青沙浦河粉', time: '13:00~15:00', openHours: '10:00~18:00', address: '부산 해운대구 청사포로128번길 6 청사포쌀국수', naverUrl: 'https://naver.me/Fx2wpuxl', transitMode: '坐公車', transitTime: '15', taxiFee: '', photos: [] },
             { id: 405, category: '景點', title: '海岸列車：青沙浦站到松亭站', time: '15:00~15:30', photos: [] },
-            { id: 406, category: '景點', title: 'Skyline滑坡列車', time: '15:30~17:00', openHours: '10:00~18:00', address: '부산 기장군 기장읍 기장해안로 205', naverUrl: 'https://naver.me/xtNI3jDH', transitMode: '計程車', transitTime: '10', photos: [] },
-            { id: 407, category: '景點', title: '到松亭站坐 海岸列車➔松亭站到尾浦站', time: '17:15~18:00', address: '부산 해운대구 송정중앙로8번길 60', naverUrl: 'https://naver.me/FgEZQXbQ', transitMode: '走路', transitTime: '15', photos: [] },
-            { id: 408, category: '美食', title: '晚餐：풍천만민물장어 해운대본점 烤鰻魚', time: '18:30~20:00', openHours: '11:00~22:00', address: '부산 해운대구 달맞이길 22 1층', naverUrl: 'https://naver.me/xllYakSo', transitMode: '走路', transitTime: '10', photos: [] },
+            { id: 406, category: '景點', title: 'Skyline滑坡列車', time: '15:30~17:00', openHours: '10:00~18:00', address: '부산 기장군 기장읍 기장해안로 205', naverUrl: 'https://naver.me/xtNI3jDH', transitMode: '計程車', transitTime: '10', taxiFee: '', photos: [] },
+            { id: 407, category: '景點', title: '到松亭站坐 海岸列車➔松亭站到尾浦站', time: '17:15~18:00', address: '부산 해운대구 송정중앙로8번길 60', naverUrl: 'https://naver.me/FgEZQXbQ', transitMode: '走路', transitTime: '15', taxiFee: '', photos: [] },
+            { id: 408, category: '美食', title: '晚餐：풍천만민물장어 해운대본점 烤鰻魚', time: '18:30~20:00', openHours: '11:00~22:00', address: '부산 해운대구 달맞이길 22 1층', naverUrl: 'https://naver.me/xllYakSo', transitMode: '走路', transitTime: '10', taxiFee: '', photos: [] },
             { id: 409, category: '購物', title: '海雲台逛逛購物', time: '20:00~', photos: [] }
           ],
           4: [
-            { id: 501, category: '美食', title: '早餐2選1：해운대삼계탕 人參蔘雞湯 或 바다마루전복죽 大海鮑魚粥', time: '09:30~11:00', openHours: '蔘雞湯: 10:00~22:00 / 鮑魚粥: 07:00~14:30, 16:00~20:00', address: '부산 해운대구 달맞이길 6 (蔘雞湯) / 부산 해운대구 달맞이길62번길 7 (鮑魚粥)', naverUrl: 'https://naver.me/xNpbwa6l', transitMode: '計程車', transitTime: '20', photos: [] },
-            { id: 502, category: '購物', title: '逛新世界百貨', time: '11:30~13:00', openHours: '10:30~20:30', address: '부산 해운대구 센텀남대로 35 , 1층', naverUrl: 'https://naver.me/5XcVqz6G', transitMode: '走路', transitTime: '5', photos: [] },
+            { id: 501, category: '美食', title: '早餐2選1：해운대삼계탕 人參蔘雞湯 或 바다마루전복죽 大海鮑魚粥', time: '09:30~11:00', openHours: '蔘雞湯: 10:00~22:00 / 鮑魚粥: 07:00~14:30, 16:00~20:00', address: '부산 해운대구 달맞이길 6 (蔘雞湯) / 부산 해운대구 달맞이길62번길 7 (鮑魚粥)', naverUrl: 'https://naver.me/xNpbwa6l', transitMode: '計程車', transitTime: '20', taxiFee: '', photos: [] },
+            { id: 502, category: '購物', title: '逛新世界百貨', time: '11:30~13:00', openHours: '10:30~20:30', address: '부산 해운대구 센텀남대로 35 , 1층', naverUrl: 'https://naver.me/5XcVqz6G', transitMode: '走路', transitTime: '5', taxiFee: '', photos: [] },
             { id: 503, category: '景點', title: 'SPA LAND汗蒸幕', time: '13:00~19:00', note: '15:45~19:00 女生去醫美 (步行約6分, 地址:부산 해운대구 센텀2로 19 센텀코아 2층 / NAVER:https://naver.me/GII4VFmz)', photos: [] },
-            { id: 504, category: '美食', title: '晚餐2選1：동동국밥 豬肉米腸湯飯 或 스시 마이우 迴轉壽司', time: '19:00~20:30', openHours: '湯飯: 11:00~21:00 / 壽司: 11:00~22:00', address: '부산 해운대구 센텀동로 25 (湯飯) / 부산 해운대구 센텀2로 33 (壽司)', naverUrl: 'https://naver.me/5Vx0wBvl', transitMode: '坐公車', transitTime: '20', photos: [] },
+            { id: 504, category: '美食', title: '晚餐2選1：동동국밥 豬肉米腸湯飯 或 스시 마이우 迴轉壽司', time: '19:00~20:30', openHours: '湯飯: 11:00~21:00 / 壽司: 11:00~22:00', address: '부산 해운대구 센텀동로 25 (湯飯) / 부산 해운대구 센텀2로 33 (壽司)', naverUrl: 'https://naver.me/5Vx0wBvl', transitMode: '坐公車', transitTime: '20', taxiFee: '', photos: [] },
             { id: 505, category: '購物', title: '回台灣前採購', time: '20:30~', note: '公車車資約 ₩1,600', photos: [] }
           ],
           5: [
@@ -1237,6 +1250,15 @@
         }
       },
 
+      // 修正處：編輯預估計程車費用的方法
+      editTaxiFee(item) {
+        if (!this.checkPassword()) return;
+        const newFee = prompt('請輸入預估計程車費用 (韓元 KRW):', item.taxiFee || '');
+        if (newFee !== null) {
+          item.taxiFee = newFee.trim();
+        }
+      },
+
       getTransitIcon(mode) {
         switch (mode) {
           case '坐公車': return 'fa-solid fa-bus';
@@ -1297,7 +1319,7 @@
       openAddModalWithAuth() {
         if (this.checkPassword()) {
           this.isEditMode = false;
-          this.modalItem = { category: '景點', transitMode: '計程車', transitTime: '15', photos: [] };
+          this.modalItem = { category: '景點', transitMode: '計程車', transitTime: '15', taxiFee: '', photos: [] };
           this.showItineraryModal = true;
         }
       },
