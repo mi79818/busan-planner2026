@@ -353,6 +353,57 @@
 
     <!-- 3. 韓語即時通頁面 -->
     <div v-if="currentTab === 'korean'" class="space-y-4">
+      
+      <!-- 置頂：點餐數量速查表 (依圖片設計，按鈕點擊可發音) -->
+      <div class="bg-pink-50/80 p-3.5 rounded-2xl border border-pink-200/80 shadow-sm">
+        <div class="flex items-center justify-center space-x-1.5 mb-3">
+          <span class="text-base">👇</span>
+          <h3 class="font-bold text-pink-600 text-sm tracking-wide">點餐數量速查表</h3>
+        </div>
+
+        <div class="grid grid-cols-5 gap-1.5 text-center text-xs">
+          <!-- 表頭區塊 -->
+          <div class="font-bold text-pink-500 py-1 flex items-center justify-center">#</div>
+          <div class="font-bold text-pink-500 py-1">
+            <div>個</div>
+            <div class="text-[10px] text-pink-400 font-normal">(Gae)</div>
+          </div>
+          <div class="font-bold text-pink-500 py-1">
+            <div>人份</div>
+            <div class="text-[10px] text-pink-400 font-normal">(Inbun)</div>
+          </div>
+          <div class="font-bold text-pink-500 py-1">
+            <div>杯</div>
+            <div class="text-[10px] text-pink-400 font-normal">(Jan)</div>
+          </div>
+          <div class="font-bold text-pink-500 py-1">
+            <div>瓶</div>
+            <div class="text-[10px] text-pink-400 font-normal">(Byeong)</div>
+          </div>
+
+          <!-- 數量對照按鈕 (數字 1~5) -->
+          <template v-for="row in quantityTable" :key="row.num">
+            <div class="font-bold text-gray-500 flex items-center justify-center text-sm">{{ row.num }}</div>
+            <button @click="speakKorean(row.gae.kr)" class="bg-blue-50/80 hover:bg-blue-100 active:scale-95 border border-blue-200/60 rounded-xl py-2 px-1 transition-all shadow-xs flex flex-col items-center justify-center">
+              <span class="font-bold text-blue-900 text-xs">{{ row.gae.kr }}</span>
+              <span class="text-[10px] text-gray-500 mt-0.5 font-medium">({{ row.gae.pron }})</span>
+            </button>
+            <button @click="speakKorean(row.inbun.kr)" class="bg-blue-50/80 hover:bg-blue-100 active:scale-95 border border-blue-200/60 rounded-xl py-2 px-1 transition-all shadow-xs flex flex-col items-center justify-center">
+              <span class="font-bold text-blue-900 text-xs">{{ row.inbun.kr }}</span>
+              <span class="text-[10px] text-gray-500 mt-0.5 font-medium">({{ row.inbun.pron }})</span>
+            </button>
+            <button @click="speakKorean(row.jan.kr)" class="bg-blue-50/80 hover:bg-blue-100 active:scale-95 border border-blue-200/60 rounded-xl py-2 px-1 transition-all shadow-xs flex flex-col items-center justify-center">
+              <span class="font-bold text-blue-900 text-xs">{{ row.jan.kr }}</span>
+              <span class="text-[10px] text-gray-500 mt-0.5 font-medium">({{ row.jan.pron }})</span>
+            </button>
+            <button @click="speakKorean(row.byeong.kr)" class="bg-blue-50/80 hover:bg-blue-100 active:scale-95 border border-blue-200/60 rounded-xl py-2 px-1 transition-all shadow-xs flex flex-col items-center justify-center">
+              <span class="font-bold text-blue-900 text-xs">{{ row.byeong.kr }}</span>
+              <span class="text-[10px] text-gray-500 mt-0.5 font-medium">({{ row.byeong.pron }})</span>
+            </button>
+          </template>
+        </div>
+      </div>
+
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
         <h3 class="font-bold text-gray-800 text-sm flex items-center">
           <i class="fa-solid fa-language text-ocean-dark mr-2 text-base"></i>韓語即時通
@@ -710,6 +761,45 @@
           { week: 'Thu', date: '9/3' },
           { week: 'Fri', date: '9/4' },
           { week: 'Sat', date: '9/5' }
+        ],
+
+        // 點餐數量速查表 (數字 1~5)
+        quantityTable: [
+          {
+            num: 1,
+            gae: { kr: '한 개', pron: 'Han' },
+            inbun: { kr: '1 인분', pron: 'Il' },
+            jan: { kr: '한 잔', pron: 'Han' },
+            byeong: { kr: '한 병', pron: 'Han' }
+          },
+          {
+            num: 2,
+            gae: { kr: '두 개', pron: 'Du' },
+            inbun: { kr: '2 인분', pron: 'I' },
+            jan: { kr: '두 잔', pron: 'Du' },
+            byeong: { kr: '두 병', pron: 'Du' }
+          },
+          {
+            num: 3,
+            gae: { kr: '세 개', pron: 'Se' },
+            inbun: { kr: '3 인분', pron: 'Sam' },
+            jan: { kr: '세 잔', pron: 'Se' },
+            byeong: { kr: '세 병', pron: 'Se' }
+          },
+          {
+            num: 4,
+            gae: { kr: '네 개', pron: 'Ne' },
+            inbun: { kr: '4 인분', pron: 'Sa' },
+            jan: { kr: '네 잔', pron: 'Ne' },
+            byeong: { kr: '네 병', pron: 'Ne' }
+          },
+          {
+            num: 5,
+            gae: { kr: '다섯 개', pron: 'Daseot' },
+            inbun: { kr: '5 인분', pron: 'O' },
+            jan: { kr: '다섯 잔', pron: 'Daseot' },
+            byeong: { kr: '다섯 병', pron: 'Daseot' }
+          }
         ],
 
         itineraryData: {
