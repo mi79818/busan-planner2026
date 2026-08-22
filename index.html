@@ -123,14 +123,17 @@
         </button>
       </div>
 
-      <!-- 天氣資訊卡 (包含體感溫度) -->
+      <!-- 天氣資訊卡 (包含最高溫、最低溫與體感溫度) -->
       <div class="bg-gradient-to-r from-blue-400 to-ocean-dark text-white rounded-2xl p-4 mb-4 shadow-sm flex items-center justify-between">
         <div class="flex items-center space-x-3">
           <i :class="weatherIcon" class="text-3xl"></i>
           <div>
             <div class="text-xs opacity-90">釜山即時天氣</div>
             <div class="text-base font-bold leading-tight">{{ weather.temp }}°C <span class="text-xs font-normal opacity-90">(體感 {{ weather.feelsLike }}°C)</span></div>
-            <div class="text-xs font-medium opacity-90 mt-0.5">{{ weather.desc }}</div>
+            <div class="text-xs font-medium opacity-90 mt-0.5">
+              <span>{{ weather.desc }}</span>
+              <span class="ml-2 font-normal">高 {{ weather.maxTemp }}°C / 低 {{ weather.minTemp }}°C</span>
+            </div>
           </div>
         </div>
         <div class="text-right text-xs opacity-90 space-y-1">
@@ -469,18 +472,34 @@
 
     <!-- 5. 花費記帳頁面 -->
     <div v-if="currentTab === 'expenses'" class="space-y-4">
-      <div class="bg-gradient-to-r from-ocean-dark to-ocean-deep text-white p-5 rounded-2xl shadow-md">
-        <span class="text-xs opacity-80">累積總花費</span>
-        <div class="text-3xl font-extrabold mt-1">₩ {{ totalExpenses.toLocaleString() }}</div>
-        <div class="text-xs opacity-80 mt-1">約合 NT$ {{ Math.round(totalExpenses * 0.024).toLocaleString() }}</div>
+      
+      <!-- 篩選列 (需求1: 可篩選日期及類別) -->
+      <div class="grid grid-cols-2 gap-2 bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
+        <div>
+          <label class="text-[10px] text-gray-400 block mb-1">篩選日期</label>
+          <input type="date" v-model="expenseFilterDate" class="w-full bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-xl px-2.5 py-1.5 outline-none focus:border-ocean">
+        </div>
+        <div>
+          <label class="text-[10px] text-gray-400 block mb-1">篩選類別</label>
+          <select v-model="expenseFilterCategory" class="w-full bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-xl px-2.5 py-1.5 outline-none focus:border-ocean">
+            <option value="全部">全部類別</option>
+            <option value="飲食">飲食</option>
+            <option value="購物">購物</option>
+            <option value="交通">交通</option>
+            <option value="門票">門票</option>
+            <option value="住宿">住宿</option>
+            <option value="其他">其他</option>
+          </select>
+        </div>
       </div>
 
-      <div v-if="expenses.length === 0" class="text-center py-10 text-gray-400 text-xs">
-        目前沒有記帳項目，點擊右下角「+」新增！
+      <div v-if="filteredExpenses.length === 0" class="text-center py-10 text-gray-400 text-xs">
+        目前沒有符合條件的記帳項目，點擊右下角「+」新增！
       </div>
 
+      <!-- 記帳項目列表 -->
       <div class="space-y-2">
-        <div v-for="(exp, idx) in expenses" :key="idx" class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-100 flex flex-col space-y-2">
+        <div v-for="exp in filteredExpenses" :key="exp.originalIndex" class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-100 flex flex-col space-y-2">
           <div class="flex justify-between items-center">
             <div class="flex items-center space-x-3">
               <div class="w-10 h-10 rounded-xl bg-ocean-light text-ocean-dark flex items-center justify-center font-bold text-sm">
@@ -493,7 +512,7 @@
             </div>
             <div class="text-right">
               <div class="font-bold text-sm text-gray-800">₩ {{ Number(exp.amount).toLocaleString() }}</div>
-              <button @click="deleteExpense(idx)" class="text-[10px] text-red-400">刪除</button>
+              <button @click="deleteExpense(exp.originalIndex)" class="text-[10px] text-red-400">刪除</button>
             </div>
           </div>
 
@@ -502,6 +521,13 @@
             <img v-for="(photo, pIdx) in exp.photos" :key="pIdx" :src="photo" @click="previewImageUrl = photo" class="w-12 h-12 object-cover rounded-lg border border-gray-200 cursor-pointer hover:scale-105 transition-transform shadow-sm">
           </div>
         </div>
+      </div>
+
+      <!-- 累積總花費區塊 (需求2: 移至記帳項目最下面) -->
+      <div class="bg-gradient-to-r from-ocean-dark to-ocean-deep text-white p-5 rounded-2xl shadow-md mt-4">
+        <span class="text-xs opacity-80">累積總花費</span>
+        <div class="text-3xl font-extrabold mt-1">₩ {{ totalExpenses.toLocaleString() }}</div>
+        <div class="text-xs opacity-80 mt-1">約合 NT$ {{ Math.round(totalExpenses * 0.024).toLocaleString() }}</div>
       </div>
 
       <button @click="showExpenseModal = true" class="fixed bottom-6 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30">
@@ -740,6 +766,8 @@
         selectedDayIndex: 0,
         filterCategory: '全部',
         selectedKoreanCategory: '全部',
+        expenseFilterDate: '', // 需求1: 記帳日期篩選變數
+        expenseFilterCategory: '全部', // 需求1: 記帳類別篩選變數
         krwInput: null,
         toastMessage: '',
         previewImageUrl: null,
@@ -760,7 +788,8 @@
         quickLocations: ['樂天超市', 'Olive Young', '國際市場', '大創', '免稅店', '便利商店'],
         newExpense: { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0], photos: [] },
 
-        weather: { temp: 26, feelsLike: 28, desc: '多雲晴朗', pop: 10, wind: 2.1 },
+        // 需求3: 補上最高溫與最低溫
+        weather: { temp: 26, maxTemp: 28, minTemp: 21, feelsLike: 28, desc: '多雲晴朗', pop: 10, wind: 2.1 },
 
         days: [
           { week: 'Mon', date: '8/31' },
@@ -1106,6 +1135,17 @@
         if (!this.krwInput) return 0;
         return Math.round(this.krwInput * 0.024).toLocaleString();
       },
+      // 需求1: 記帳項目的篩選計算
+      filteredExpenses() {
+        return this.expenses
+          .map((item, index) => ({ ...item, originalIndex: index }))
+          .filter(item => {
+            const matchDate = !this.expenseFilterDate || item.date === this.expenseFilterDate;
+            const matchCategory = this.expenseFilterCategory === '全部' || item.category === this.expenseFilterCategory;
+            return matchDate && matchCategory;
+          });
+      },
+      // 計算總花費（維持顯示所有項目的累積金額，若要僅計算篩選結果可將 this.expenses 替換為 this.filteredExpenses）
       totalExpenses() {
         return this.expenses.reduce((sum, item) => sum + Number(item.amount || 0), 0);
       },
