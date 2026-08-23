@@ -4,12 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <!-- 1. 一般網頁標題（分頁籤顯示的名稱） -->
+  <!-- 1. 一般網頁標題與網址列圖示 -->
   <title>2026釜山之旅</title>
 
-  <!-- 2. 社群分享標題與副標題 (Open Graph) -->
+  <!-- 手機主畫面圖示 (PWA / Web App) -->
+  <link rel="apple-touch-icon" href="family.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="family.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="family.png">
+
+  <!-- 2. 社群分享標題、副標題與縮圖 (Open Graph) -->
   <meta property="og:title" content="2026釜山之旅">
   <meta property="og:description" content="上班意興欄珊，只好去釜山">
+  <!-- ⚠️ 請將下方網址替換為你網站上線後的完整網址 -->
+  <meta property="og:image" content="https://raw.githubusercontent.com/mi79818/busan-planner2026/main/family.png">
+  <meta property="og:url" content=" https://mi79818.github.io/busan-planner2026/">
+  <meta property="og:type" content="website">
+
+  <!-- Twitter / X 專用分享設定 -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="2026釜山之旅">
+  <meta name="twitter:description" content="上班意興欄珊，只好去釜山">
+  <meta name="twitter:image" content="https://raw.githubusercontent.com/mi79818/busan-planner2026/main/family.png">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -48,14 +63,6 @@
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   </style>
-
-<!-- iPhone / iPad 專用 -->
-<link rel="apple-touch-icon" href="family.png">
-
-<!-- Android / 一般瀏覽器專用 -->
-<link rel="icon" type="image/png" sizes="192x192" href="family.png">
-<link rel="icon" type="image/png" sizes="512x512" href="family.png">
-
 </head>
 <body class="flex justify-center min-h-screen">
 
