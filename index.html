@@ -698,24 +698,14 @@
     </div>
   </div>
 
-  <!-- Firebase Firestore 讀寫測試UI區塊 -->
-  <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-200 p-3 shadow-lg z-40 flex flex-col gap-1.5 text-center">
-    <div class="text-xs font-bold text-gray-600">Firebase Firestore 讀寫測試</div>
-    <div class="flex justify-center gap-2">
-      <button id="addBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-4 py-2 rounded-xl transition-colors shadow-sm">寫入測試資料</button>
-      <button id="readBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium px-4 py-2 rounded-xl transition-colors shadow-sm">讀取測試資料</button>
-    </div>
-  </div>
-
 </div>
 
-<!-- 引入 Firebase SDK (使用 CDN 模組化載入) -->
+<!-- 引入 Firebase SDK 並綁定至 Vue 應用 -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  // 你的 Firebase 配置資訊
+  // 您的 Firebase 配置資訊
   const firebaseConfig = {
     apiKey: "AIZASYDZQ7TNXRMYO1G10ARKIMOQ17L_SSCR31O",
     authDomain: "Gotobusan-dfd8d.firebaseapp.com",
@@ -725,44 +715,10 @@
     appId: "1:269046746558:web:0634c6c52f424978263def"
   };
 
-  // 初始化 Firebase 與 Firestore
+  // 初始化 Firebase & Firestore
   const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
   const db = getFirestore(app);
 
-  console.log("Firebase 成功連線！");
-
-  // 1. 寫入資料按鈕事件
-  document.getElementById("addBtn").addEventListener("click", async () => {
-    try {
-      await setDoc(doc(db, "testCollection", "testDoc"), {
-        message: "測試成功！",
-        timestamp: new Date()
-      });
-      alert("資料已成功寫入 Firebase！");
-    } catch (e) {
-      console.error("寫入失敗：", e);
-      alert("寫入失敗，請查看控制台 (F12) 錯誤訊息");
-    }
-  });
-
-  // 2. 讀取資料按鈕事件
-  document.getElementById("readBtn").addEventListener("click", async () => {
-    try {
-      const docSnap = await getDoc(doc(db, "testCollection", "testDoc"));
-      if (docSnap.exists()) {
-        alert("讀取成功，資料內容：" + JSON.stringify(docSnap.data()));
-      } else {
-        alert("找不到資料！");
-      }
-    } catch (e) {
-      console.error("讀取失敗：", e);
-      alert("讀取失敗，請查看控制台 (F12) 錯誤訊息");
-    }
-  });
-</script>
-
-<script>
   const { createApp } = Vue;
 
   createApp({
@@ -835,7 +791,7 @@
           }
         ],
 
-        itineraryData: {
+        defaultItineraryData: {
           0: [
             { id: 100, category: '其他', title: '出發到星威停車場', time: '07:30~10:00', transitMode: '搭車', transitTime: '10', taxiFee: '', photos: [] },
             { id: 1001, category: '其他', title: '桃園機場第二航廈', time: '10:30~11:30', note: '吃東西、買飛機上要吃的食物(飲料不行)(出境後可以買)', transitMode: '走路', transitTime: '0', taxiFee: '', photos: [] },
@@ -884,6 +840,7 @@
             { id: 602, category: '航班', title: '釜山 ➔ 台北(桃園)', time: '14:15~15:50', flightNo: 'BX 791', depCode: 'PUS', depTime: '14:15', arrCode: 'TPE', arrTime: '15:50', duration: '2h 35m', note: '11:30 到機場後辦理退稅、吃午餐', photos: [] }
           ]
         },
+        itineraryData: {},
 
         infoCards: [
           {
@@ -1157,7 +1114,40 @@
         return groups;
       }
     },
+    mounted() {
+      // 實時監聽 Firestore 上的旅遊資料 (集合: busanTrip, 文件: mainData)
+      const tripDocRef = doc(db, "busanTrip", "mainData");
+      onSnapshot(tripDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          this.itineraryData = data.itineraryData || this.defaultItineraryData;
+          this.shoppingList = data.shoppingList || [];
+          this.expenses = data.expenses || [];
+        } else {
+          // 若無遠端資料，初始化並寫入預設行程
+          this.itineraryData = this.defaultItineraryData;
+          this.syncToFirebase();
+        }
+      }, (error) => {
+        console.error("Firestore 即時監聽失敗：", error);
+      });
+    },
     methods: {
+      // 將目前的全站狀態同步更新至 Firestore
+      async syncToFirebase() {
+        try {
+          const tripDocRef = doc(db, "busanTrip", "mainData");
+          await setDoc(tripDocRef, {
+            itineraryData: this.itineraryData,
+            shoppingList: this.shoppingList,
+            expenses: this.expenses
+          });
+        } catch (error) {
+          console.error("儲存至 Firebase 失敗：", error);
+          this.showToast('資料同步失敗，請再試一次');
+        }
+      },
+
       speakKorean(text) {
         if ('speechSynthesis' in window) {
           window.speechSynthesis.cancel();
@@ -1216,6 +1206,7 @@
         let currentIdx = modes.indexOf(item.transitMode || '計程車');
         let nextIdx = (currentIdx + 1) % modes.length;
         item.transitMode = modes[nextIdx];
+        this.syncToFirebase();
       },
 
       editTransitTime(item) {
@@ -1223,6 +1214,7 @@
         const newTime = prompt('請輸入所需交通時間 (分鐘):', item.transitTime || '15');
         if (newTime !== null && newTime.trim() !== '') {
           item.transitTime = newTime.trim();
+          this.syncToFirebase();
         }
       },
 
@@ -1231,6 +1223,7 @@
         const newFee = prompt('請輸入預估計程車費用 (韓元 KRW):', item.taxiFee || '');
         if (newFee !== null) {
           item.taxiFee = newFee.trim();
+          this.syncToFirebase();
         }
       },
 
@@ -1330,6 +1323,7 @@
         this.itineraryData[this.selectedDayIndex] = dayList;
         this.sortDayItinerary(this.selectedDayIndex);
         this.showItineraryModal = false;
+        this.syncToFirebase();
       },
 
       confirmDeleteItinerary() {
@@ -1337,6 +1331,7 @@
           let dayList = this.itineraryData[this.selectedDayIndex] || [];
           this.itineraryData[this.selectedDayIndex] = dayList.filter(i => i.id !== this.modalItem.id);
           this.showItineraryModal = false;
+          this.syncToFirebase();
         }
       },
 
@@ -1359,13 +1354,16 @@
         this.shoppingList.push({ ...this.newShopping });
         this.newShopping = { name: '', location: '', note: '', image: '', isBought: false };
         this.showShoppingModal = false;
+        this.syncToFirebase();
       },
 
       toggleBought(idx) {
         this.shoppingList[idx].isBought = !this.shoppingList[idx].isBought;
+        this.syncToFirebase();
       },
       deleteShoppingItem(idx) {
         this.shoppingList.splice(idx, 1);
+        this.syncToFirebase();
       },
 
       saveExpenseItem() {
@@ -1376,10 +1374,12 @@
         this.expenses.push({ ...this.newExpense });
         this.newExpense = { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0], photos: [] };
         this.showExpenseModal = false;
+        this.syncToFirebase();
       },
 
       deleteExpense(idx) {
         this.expenses.splice(idx, 1);
+        this.syncToFirebase();
       }
     }
   }).mount('#app');
