@@ -700,6 +700,29 @@
 
 </div>
 
+<!-- 引入 Firebase SDK (使用 CDN 模組化載入) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+
+  // 你的 Firebase 配置資訊
+  const firebaseConfig = {
+    apiKey: "AIzaSyDzq7tnXRmyo1g10arKiMOq17L_SSCR31o",
+    authDomain: "gotobusan-dfd8d.firebaseapp.com",
+    projectId: "gotobusan-dfd8d",
+    storageBucket: "gotobusan-dfd8d.firebasestorage.app",
+    messagingSenderId: "269046746558",
+    appId: "1:269046746558:web:0634c6c52f424978263def",
+    measurementId: "G-DLXSFK3ZZQ"
+  };
+
+  // 初始化 Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+
+  console.log("Firebase 成功連線！");
+</script>
+
 <script>
   const { createApp } = Vue;
 
@@ -1322,5 +1345,6 @@
     }
   }).mount('#app');
 </script>
+
 </body>
 </html>
