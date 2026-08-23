@@ -51,7 +51,7 @@
 </head>
 <body class="flex justify-center min-h-screen">
 
-<div id="app" class="w-full max-w-md bg-[#F4F9F9] min-h-screen shadow-2xl relative flex flex-col pb-24">
+<div id="app" class="w-full max-w-md bg-[#F4F9F9] min-h-screen shadow-2xl relative flex flex-col pb-36">
 
   <!-- Toast 複製成功提示訊息 -->
   <div v-if="toastMessage" class="fixed top-5 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-4 py-2 rounded-full shadow-lg z-50 transition-all duration-300">
@@ -238,7 +238,7 @@
       </div>
 
       <!-- 新增行程 Floating Button -->
-      <button @click="openAddModalWithAuth" class="fixed bottom-6 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30 hover:scale-105 active:scale-95 transition-transform">
+      <button @click="openAddModalWithAuth" class="fixed bottom-24 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30 hover:scale-105 active:scale-95 transition-transform">
         <i class="fa-solid fa-plus"></i>
       </button>
     </div>
@@ -429,7 +429,7 @@
         </div>
       </div>
 
-      <button @click="showShoppingModal = true" class="fixed bottom-6 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30">
+      <button @click="showShoppingModal = true" class="fixed bottom-24 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30">
         <i class="fa-solid fa-plus"></i>
       </button>
     </div>
@@ -494,7 +494,7 @@
         <div class="text-xs opacity-80 mt-1">約合 NT$ {{ Math.round(totalExpenses * 0.024).toLocaleString() }}</div>
       </div>
 
-      <button @click="showExpenseModal = true" class="fixed bottom-6 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30">
+      <button @click="showExpenseModal = true" class="fixed bottom-24 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30">
         <i class="fa-solid fa-plus"></i>
       </button>
     </div>
@@ -698,29 +698,68 @@
     </div>
   </div>
 
+  <!-- Firebase Firestore 讀寫測試UI區塊 -->
+  <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-200 p-3 shadow-lg z-40 flex flex-col gap-1.5 text-center">
+    <div class="text-xs font-bold text-gray-600">Firebase Firestore 讀寫測試</div>
+    <div class="flex justify-center gap-2">
+      <button id="addBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-4 py-2 rounded-xl transition-colors shadow-sm">寫入測試資料</button>
+      <button id="readBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium px-4 py-2 rounded-xl transition-colors shadow-sm">讀取測試資料</button>
+    </div>
+  </div>
+
 </div>
 
 <!-- 引入 Firebase SDK (使用 CDN 模組化載入) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   // 你的 Firebase 配置資訊
   const firebaseConfig = {
-    apiKey: "AIzaSyDzq7tnXRmyo1g10arKiMOq17L_SSCR31o",
-    authDomain: "gotobusan-dfd8d.firebaseapp.com",
+    apiKey: "AIZASYDZQ7TNXRMYO1G10ARKIMOQ17L_SSCR31O",
+    authDomain: "Gotobusan-dfd8d.firebaseapp.com",
     projectId: "gotobusan-dfd8d",
-    storageBucket: "gotobusan-dfd8d.firebasestorage.app",
+    storageBucket: "Gotobusan-dfd8d.firebaseapp.com",
     messagingSenderId: "269046746558",
-    appId: "1:269046746558:web:0634c6c52f424978263def",
-    measurementId: "G-DLXSFK3ZZQ"
+    appId: "1:269046746558:web:0634c6c52f424978263def"
   };
 
-  // 初始化 Firebase
+  // 初始化 Firebase 與 Firestore
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
+  const db = getFirestore(app);
 
   console.log("Firebase 成功連線！");
+
+  // 1. 寫入資料按鈕事件
+  document.getElementById("addBtn").addEventListener("click", async () => {
+    try {
+      await setDoc(doc(db, "testCollection", "testDoc"), {
+        message: "測試成功！",
+        timestamp: new Date()
+      });
+      alert("資料已成功寫入 Firebase！");
+    } catch (e) {
+      console.error("寫入失敗：", e);
+      alert("寫入失敗，請查看控制台 (F12) 錯誤訊息");
+    }
+  });
+
+  // 2. 讀取資料按鈕事件
+  document.getElementById("readBtn").addEventListener("click", async () => {
+    try {
+      const docSnap = await getDoc(doc(db, "testCollection", "testDoc"));
+      if (docSnap.exists()) {
+        alert("讀取成功，資料內容：" + JSON.stringify(docSnap.data()));
+      } else {
+        alert("找不到資料！");
+      }
+    } catch (e) {
+      console.error("讀取失敗：", e);
+      alert("讀取失敗，請查看控制台 (F12) 錯誤訊息");
+    }
+  });
 </script>
 
 <script>
