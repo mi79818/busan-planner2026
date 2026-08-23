@@ -4,27 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <!-- 1. 一般網頁標題與網址列圖示 -->
+  <!-- 1. 一般網頁標題（分頁籤顯示的名稱） -->
   <title>2026釜山之旅</title>
 
-  <!-- 手機主畫面圖示 (PWA / Web App) -->
-  <link rel="apple-touch-icon" href="family.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="family.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="family.png">
-
-  <!-- 2. 社群分享標題、副標題與縮圖 (Open Graph) -->
+  <!-- 2. 社群分享標題與副標題 (Open Graph) -->
   <meta property="og:title" content="2026釜山之旅">
   <meta property="og:description" content="上班意興欄珊，只好去釜山">
-  <!-- ⚠️ 請將下方網址替換為你網站上線後的完整網址 -->
-  <meta property="og:image" content="https://raw.githubusercontent.com/mi79818/busan-planner2026/main/family.png">
-  <meta property="og:url" content=" https://mi79818.github.io/busan-planner2026/">
-  <meta property="og:type" content="website">
-
-  <!-- Twitter / X 專用分享設定 -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="2026釜山之旅">
-  <meta name="twitter:description" content="上班意興欄珊，只好去釜山">
-  <meta name="twitter:image" content="https://raw.githubusercontent.com/mi79818/busan-planner2026/main/family.png">
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -66,52 +51,17 @@
 </head>
 <body class="flex justify-center min-h-screen">
 
-<div id="app" class="w-full max-w-md bg-[#F4F9F9] min-h-screen shadow-2xl relative flex flex-col pb-36">
+<div id="app" class="w-full max-w-md bg-[#F4F9F9] min-h-screen shadow-2xl relative flex flex-col pb-24">
 
   <!-- Toast 複製成功提示訊息 -->
   <div v-if="toastMessage" class="fixed top-5 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-4 py-2 rounded-full shadow-lg z-50 transition-all duration-300">
     {{ toastMessage }}
   </div>
 
-  <!-- 全螢幕大圖 Modal (一般照片 preview) -->
+  <!-- 全螢幕大圖 Modal -->
   <div v-if="previewImageUrl" @click="previewImageUrl = null" class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 cursor-pointer">
     <img :src="previewImageUrl" class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl">
     <button class="absolute top-5 right-5 text-white text-2xl"><i class="fa-solid fa-xmark"></i></button>
-  </div>
-
-  <!-- 購物商品詳細資訊彈窗 (包含放大圖片與詳細資料) -->
-  <div v-if="previewShoppingItem" @click.self="previewShoppingItem = null" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-sm rounded-3xl p-5 relative shadow-2xl overflow-hidden animate-fade-in">
-      <button @click="previewShoppingItem = null" class="absolute top-4 right-4 bg-gray-100 hover:bg-gray-200 text-gray-700 w-8 h-8 rounded-full flex items-center justify-center transition-colors z-10">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-
-      <!-- 大圖展示 -->
-      <div v-if="previewShoppingItem.image" class="w-full h-64 bg-gray-100 rounded-2xl overflow-hidden mb-4 border border-gray-100 shadow-inner">
-        <img :src="previewShoppingItem.image" class="w-full h-full object-contain">
-      </div>
-
-      <!-- 商品資料 -->
-      <div class="space-y-3">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold bg-ocean-light text-ocean-dark px-2.5 py-1 rounded-lg">
-            <i class="fa-solid fa-store mr-1"></i>{{ previewShoppingItem.location || '未分類' }}
-          </span>
-          <span v-if="previewShoppingItem.quantity" class="text-xs font-bold bg-amber-100 text-amber-800 px-2.5 py-1 rounded-lg">
-            數量：{{ previewShoppingItem.quantity }}
-          </span>
-        </div>
-
-        <h3 class="font-bold text-gray-800 text-lg leading-snug">
-          {{ previewShoppingItem.name }}
-        </h3>
-
-        <div v-if="previewShoppingItem.note" class="bg-gray-50 p-3 rounded-xl border border-gray-100 text-xs text-gray-600 leading-relaxed">
-          <div class="text-[10px] text-gray-400 mb-0.5"><i class="fa-regular fa-note-sticky mr-1"></i>備註資訊</div>
-          {{ previewShoppingItem.note }}
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- 頁首 Banner (250px 高度) -->
@@ -170,6 +120,25 @@
         </select>
       </div>
 
+      <!-- 天氣資訊卡 (包含最高溫、最低溫與體感溫度) -->
+      <div class="bg-gradient-to-r from-blue-400 to-ocean-dark text-white rounded-2xl p-4 mb-4 shadow-sm flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <i :class="weatherIcon" class="text-3xl"></i>
+          <div>
+            <div class="text-xs opacity-90">釜山即時天氣</div>
+            <div class="text-base font-bold leading-tight">{{ weather.temp }}°C <span class="text-xs font-normal opacity-90">(體感 {{ weather.feelsLike }}°C)</span></div>
+            <div class="text-xs font-medium opacity-90 mt-0.5">
+              <span>{{ weather.desc }}</span>
+              <span class="ml-2 font-normal">高 {{ weather.maxTemp }}°C / 低 {{ weather.minTemp }}°C</span>
+            </div>
+          </div>
+        </div>
+        <div class="text-right text-xs opacity-90 space-y-1">
+          <div><i class="fa-solid fa-umbrella mr-1"></i>降雨率: {{ weather.pop }}%</div>
+          <div><i class="fa-solid fa-wind mr-1"></i>風速: {{ weather.wind }} m/s</div>
+        </div>
+      </div>
+
       <!-- 行程清單 -->
       <div id="itinerary-list" class="space-y-3">
         <template v-for="(item, idx) in currentDayItinerary" :key="item.id">
@@ -205,14 +174,6 @@
                 <img v-for="(photo, pIdx) in item.photos" :key="pIdx" :src="photo" @click="previewImageUrl = photo" class="w-12 h-12 object-cover rounded-lg border border-slate-500 cursor-pointer hover:opacity-80 transition-opacity">
               </div>
 
-              <!-- 航班卡片連結按鈕 -->
-              <div v-if="item.linkUrl" class="mt-2 flex justify-start">
-                <a :href="item.linkUrl" target="_blank" class="inline-flex items-center space-x-1.5 bg-slate-600 hover:bg-slate-500 text-white text-xs px-3 py-1 rounded-full font-medium transition-colors">
-                  <i class="fa-solid fa-up-right-from-square text-[10px]"></i>
-                  <span>介紹連結</span>
-                </a>
-              </div>
-
               <div class="text-xs text-slate-300 border-t border-slate-600/50 pt-2 mt-2 flex justify-between items-center">
                 <span>{{ item.title }}</span>
                 <button @click="openEditModalWithAuth(item)" class="text-blue-300 underline">編輯</button>
@@ -246,11 +207,11 @@
                 </button>
               </div>
 
-              <!-- 詳細資訊欄位 -->
+              <!-- 詳細資訊欄位 (加入 whitespace-pre-line 支援換行) -->
               <div v-if="item.openHours || item.ticket || item.note" class="mt-3 text-xs text-gray-600 bg-gray-50 p-2.5 rounded-xl space-y-1">
                 <div v-if="item.openHours"><i class="fa-regular fa-clock mr-1 text-gray-400"></i>營業時間: {{ item.openHours }}</div>
                 <div v-if="item.ticket"><i class="fa-solid fa-ticket mr-1 text-gray-400"></i>門票費用: {{ item.ticket }}</div>
-                <div v-if="item.note"><i class="fa-regular fa-note-sticky mr-1 text-gray-400"></i>備註: {{ item.note }}</div>
+                <div v-if="item.note" class="whitespace-pre-line"><i class="fa-regular fa-note-sticky mr-1 text-gray-400"></i>備註: {{ item.note }}</div>
               </div>
 
               <!-- 照片展示區塊 (小圖) -->
@@ -258,13 +219,9 @@
                 <img v-for="(photo, pIdx) in item.photos" :key="pIdx" :src="photo" @click="previewImageUrl = photo" class="w-12 h-12 object-cover rounded-lg border border-gray-200 cursor-pointer hover:scale-105 transition-transform shadow-sm">
               </div>
 
-              <!-- 按鈕區塊：介紹連結 & Naver Map 導航按鈕 -->
-              <div v-if="item.linkUrl || item.naverUrl" class="mt-3 flex justify-end items-center space-x-2">
-                <a v-if="item.linkUrl" :href="item.linkUrl" target="_blank" class="inline-flex items-center space-x-1.5 bg-ocean-light text-ocean-dark text-xs px-3 py-1.5 rounded-full font-medium shadow-sm hover:bg-ocean/20 transition-colors border border-ocean/30">
-                  <i class="fa-solid fa-up-right-from-square text-[11px]"></i>
-                  <span>介紹連結</span>
-                </a>
-                <a v-if="item.naverUrl" :href="item.naverUrl" target="_blank" class="inline-flex items-center space-x-1.5 bg-[#03C75A] text-white text-xs px-3.5 py-1.5 rounded-full font-medium shadow-sm hover:bg-emerald-600 transition-colors">
+              <!-- Naver Map 導航按鈕 -->
+              <div v-if="item.naverUrl" class="mt-3 flex justify-end">
+                <a :href="item.naverUrl" target="_blank" class="inline-flex items-center space-x-1.5 bg-[#03C75A] text-white text-xs px-3.5 py-1.5 rounded-full font-medium shadow-sm hover:bg-emerald-600 transition-colors">
                   <i class="fa-solid fa-location-arrow"></i>
                   <span>NAVER 導航</span>
                 </a>
@@ -300,7 +257,7 @@
       </div>
 
       <!-- 新增行程 Floating Button -->
-      <button @click="openAddModalWithAuth" class="fixed bottom-24 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30 hover:scale-105 active:scale-95 transition-transform">
+      <button @click="openAddModalWithAuth" class="fixed bottom-6 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30 hover:scale-105 active:scale-95 transition-transform">
         <i class="fa-solid fa-plus"></i>
       </button>
     </div>
@@ -413,7 +370,7 @@
             </button>
             <button @click="speakKorean(row.byeong.kr)" class="bg-blue-50/80 hover:bg-blue-100 active:scale-95 border border-blue-200/60 rounded-xl py-2 px-1 transition-all shadow-xs flex flex-col items-center justify-center">
               <span class="font-bold text-blue-900 text-xs">{{ row.byeong.kr }}</span>
-              <span class="text-[10px] text-gray-500 mt-0.5 font-medium font-mono">({{ row.byeong.pron }})</span>
+              <span class="text-[10px] text-gray-500 mt-0.5 font-medium">({{ row.byeong.pron }})</span>
             </button>
           </template>
         </div>
@@ -469,16 +426,11 @@
         <div class="grid grid-cols-2 gap-3">
           <div v-for="item in items" :key="item.originalIndex" 
                :class="item.isBought ? 'bg-gray-50/80 opacity-70 border-gray-200' : 'bg-white border-gray-100'"
-               class="rounded-2xl p-3 shadow-sm border relative group flex flex-col justify-between transition-all cursor-pointer"
-               @click="openShoppingPreview(item)">
+               class="rounded-2xl p-3 shadow-sm border relative group flex flex-col justify-between transition-all">
             <div>
-              <div class="w-full h-28 bg-gray-100 rounded-xl overflow-hidden mb-2 relative group/img">
+              <div class="w-full h-28 bg-gray-100 rounded-xl overflow-hidden mb-2 relative">
                 <img :src="item.image || 'https://via.placeholder.com/150?text=No+Image'" class="w-full h-full object-cover">
-                <!-- 數量標籤 (顯示於右上角) -->
-                <span v-if="item.quantity" class="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-md backdrop-blur-xs">
-                  x {{ item.quantity }}
-                </span>
-                <button @click.stop="toggleBought(item.originalIndex)" 
+                <button @click="toggleBought(item.originalIndex)" 
                         :class="item.isBought ? 'bg-emerald-500 text-white' : 'bg-black/40 text-white hover:bg-black/60'"
                         class="absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center text-xs transition-colors z-10 shadow-md">
                   <i class="fa-solid fa-check"></i>
@@ -487,16 +439,16 @@
               <h4 class="font-bold text-xs text-gray-800 line-clamp-2" :class="item.isBought ? 'line-through text-gray-400' : ''">
                 {{ item.name }}
               </h4>
-              <div v-if="item.note" class="text-[10px] text-gray-400 mt-1 line-clamp-1">{{ item.note }}</div>
+              <div v-if="item.note" class="text-[10px] text-gray-400 mt-1 line-clamp-1 whitespace-pre-line">{{ item.note }}</div>
             </div>
-            <button @click.stop="deleteShoppingItem(item.originalIndex)" class="absolute top-2 right-2 bg-black/50 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center z-10 hover:bg-red-500 transition-colors">
+            <button @click="deleteShoppingItem(item.originalIndex)" class="absolute top-2 right-2 bg-black/50 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center z-10 hover:bg-red-500 transition-colors">
               <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
         </div>
       </div>
 
-      <button @click="showShoppingModal = true" class="fixed bottom-24 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30">
+      <button @click="showShoppingModal = true" class="fixed bottom-6 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30">
         <i class="fa-solid fa-plus"></i>
       </button>
     </div>
@@ -561,7 +513,7 @@
         <div class="text-xs opacity-80 mt-1">約合 NT$ {{ Math.round(totalExpenses * 0.024).toLocaleString() }}</div>
       </div>
 
-      <button @click="showExpenseModal = true" class="fixed bottom-24 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30">
+      <button @click="showExpenseModal = true" class="fixed bottom-6 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30">
         <i class="fa-solid fa-plus"></i>
       </button>
     </div>
@@ -605,11 +557,6 @@
         <input type="text" v-model="modalItem.naverUrl" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
       </div>
 
-      <div>
-        <label class="text-xs text-gray-500">介紹連結 (網址)</label>
-        <input type="text" v-model="modalItem.linkUrl" placeholder="https://..." class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
-      </div>
-
       <div v-if="['景點','美食','住宿','購物'].includes(modalItem.category)">
         <label class="text-xs text-gray-500">營業時間</label>
         <input type="text" v-model="modalItem.openHours" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
@@ -627,7 +574,7 @@
 
       <div>
         <label class="text-xs text-gray-500">特色 & 備註</label>
-        <textarea v-model="modalItem.note" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none h-20"></textarea>
+        <textarea v-model="modalItem.note" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none h-20 whitespace-pre-line"></textarea>
       </div>
 
       <div>
@@ -657,18 +604,12 @@
 
   <!-- Modal 3: 新增購物項目 -->
   <div v-if="showShoppingModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+    <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-3">
       <h3 class="font-bold text-base text-gray-800 mb-2">新增購物欲買清單</h3>
 
       <div>
         <label class="text-xs text-gray-500">商品名稱 *</label>
         <input type="text" v-model="newShopping.name" placeholder="例如: 零甘草泡麵 / 護手霜" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
-      </div>
-
-      <!-- 新增：單獨輸入數量欄位 (選填) -->
-      <div>
-        <label class="text-xs text-gray-500">數量 (選填)</label>
-        <input type="text" v-model="newShopping.quantity" placeholder="例如: 2 / 1盒" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
       </div>
 
       <div>
@@ -700,7 +641,7 @@
 
       <div>
         <label class="text-xs text-gray-500">備註 (選填)</label>
-        <input type="text" v-model="newShopping.note" placeholder="色號、口味等" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
+        <input type="text" v-model="newShopping.note" placeholder="數量、色號等" class="w-full border rounded-xl p-2.5 text-xs bg-gray-50 outline-none">
       </div>
 
       <div class="flex space-x-2 pt-3">
@@ -778,25 +719,7 @@
 
 </div>
 
-<!-- 引入 Firebase SDK 並綁定至 Vue 應用 -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-  // 您的 Firebase 配置資訊
-  const firebaseConfig = {
-    apiKey: "AIZASYDZQ7TNXRMYO1G10ARKIMOQ17L_SSCR31O",
-    authDomain: "Gotobusan-dfd8d.firebaseapp.com",
-    projectId: "gotobusan-dfd8d",
-    storageBucket: "Gotobusan-dfd8d.firebaseapp.com",
-    messagingSenderId: "269046746558",
-    appId: "1:269046746558:web:0634c6c52f424978263def"
-  };
-
-  // 初始化 Firebase & Firestore
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
+<script>
   const { createApp } = Vue;
 
   createApp({
@@ -811,17 +734,18 @@
         krwInput: null,
         toastMessage: '',
         previewImageUrl: null,
-        previewShoppingItem: null, // 新增購物項目詳情與大圖預覽物件
         showItineraryModal: false,
         showShoppingModal: false,
         showExpenseModal: false,
         isEditMode: false,
-        modalItem: { photos: [], linkUrl: '' },
+        modalItem: { photos: [] },
         shoppingList: [],
         expenses: [],
-        newShopping: { name: '', quantity: '', location: '', note: '', image: '', isBought: false }, // 新增 quantity
+        newShopping: { name: '', location: '', note: '', image: '', isBought: false },
         quickLocations: ['樂天超市', 'Olive Young', '國際市場', '大創', '免稅店', '便利商店'],
         newExpense: { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0], photos: [] },
+
+        weather: { temp: 26, maxTemp: 28, minTemp: 21, feelsLike: 28, desc: '多雲晴朗', pop: 10, wind: 2.1 },
 
         days: [
           { week: 'Mon', date: '8/31' },
@@ -870,56 +794,55 @@
           }
         ],
 
-        defaultItineraryData: {
+        itineraryData: {
           0: [
-            { id: 100, category: '其他', title: '出發到星威停車場', time: '07:30~10:00', transitMode: '搭車', transitTime: '10', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 1001, category: '其他', title: '桃園機場第二航廈', time: '10:30~11:30', note: '吃東西、買飛機上要吃的食物(飲料不行)(出境後可以買)', transitMode: '走路', transitTime: '0', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 101, category: '航班', title: '台北(桃園) ➔ 釜山', time: '13:30~17:05', flightNo: 'BX 794', depCode: 'TPE', depTime: '13:30', arrCode: 'PUS', arrTime: '17:05', duration: '2h 35m', transitMode: '走路', transitTime: '0', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 102, category: '其他', title: '入境釜山後搭機場接送包車', time: '18:00~19:00', note: '活動區拿禮物(通常在一樓入境大廳Gate 1附近的電扶梯後方)、LG U+ 櫃台實名制SIM卡(Gate2 3中間)、領釜山Pass(Gate3出口旁的WIFI Dosirak櫃位)、[如果有時間可以辦韓國快速通關SES(機場2樓大廳 Gate 4進門左邊)]', transitMode: '搭車', transitTime: '40', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 103, category: '住宿', title: '廣安里民宿放行李', time: '20:00', address: '부산 수영구 민락수변로 49', naverUrl: 'https://naver.me/5UVeuY2u', transitMode: '走路', transitTime: '10', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 104, category: '美食', title: '고결 稻草烤牛肋排', time: '20:00~22:00', openHours: '16:00~24:00', address: '부산 수영구 광안해변로255번길 50 1~2층', naverUrl: 'https://naver.me/xqbUlk43', transitMode: '走路', transitTime: '10', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 105, category: '購物', title: 'CU超商買隔天早餐', time: '22:00~', note: '儲值釜山PASS卡(當交通卡)(帶護照，小孩可設定兒童卡)', photos: [], linkUrl: '' }
+            { id: 100, category: '其他', title: '出發到星威停車場', time: '07:30~10:00', transitMode: '搭車', transitTime: '10', taxiFee: '', photos: [] },
+            { id: 1001, category: '其他', title: '桃園機場第二航廈', time: '10:30~11:30', note: '吃東西、買飛機上要吃的食物(飲料不行)(出境後可以買)', transitMode: '走路', transitTime: '0', taxiFee: '', photos: [] },
+            { id: 101, category: '航班', title: '台北(桃園) ➔ 釜山', time: '13:30~17:05', flightNo: 'BX 794', depCode: 'TPE', depTime: '13:30', arrCode: 'PUS', arrTime: '17:05', duration: '2h 35m', transitMode: '走路', transitTime: '0', taxiFee: '', photos: [] },
+            { id: 102, category: '其他', title: '入境釜山後搭機場接送包車', time: '18:00~19:00', note: '活動區拿禮物(通常在一樓入境大廳Gate 1附近的電扶梯後方)、LG U+ 櫃台實名制SIM卡(Gate2 3中間)、領釜山Pass(Gate3出口旁的WIFI Dosirak櫃位)、[如果有時間可以辦韓國快速通關SES(機場2樓大廳 Gate 4進門左邊)]', transitMode: '搭車', transitTime: '40', taxiFee: '', photos: [] },
+            { id: 103, category: '住宿', title: '廣安里民宿放行李', time: '20:00', address: '부산 수영구 민락수변로 49', naverUrl: 'https://naver.me/5UVeuY2u', transitMode: '走路', transitTime: '10', taxiFee: '', photos: [] },
+            { id: 104, category: '美食', title: '고결 稻草烤牛肋排', time: '20:00~22:00', openHours: '16:00~24:00', address: '부산 수영구 광안해변로255번길 50 1~2층', naverUrl: 'https://naver.me/xqbUlk43', transitMode: '走路', transitTime: '10', taxiFee: '', photos: [] },
+            { id: 105, category: '購物', title: 'CU超商買隔天早餐', time: '22:00~', note: '儲值釜山PASS卡(當交通卡)(帶護照，小孩可設定兒童卡)', photos: [] }
           ],
           1: [
-            { id: 200, category: '其他', title: '從民宿出發', time: '09:30', transitMode: '計程車', transitTime: '40', taxiFee: '22000', photos: [], linkUrl: '' },
-            { id: 201, category: '景點', title: '송도 베이스테이션(해상케이블카) 松島纜車', time: '10:10~12:00', openHours: '09:00~22:00', address: '부산 서구 송도해변로 171', naverUrl: 'https://naver.me/FvTJ9azl', transitMode: '計程車', transitTime: '30', taxiFee: '11100', photos: [], linkUrl: '' },
-            { id: 202, category: '美食', title: '午餐：태종대짬뽕 太宗台炒瑪麵', time: '12:30~14:00', openHours: '09:30~21:30，週三休息', address: '부산 영도구 태종로 805 태짬', naverUrl: 'https://naver.me/5MvcLg2O', transitMode: '計程車', transitTime: '15', taxiFee: '8100', photos: [], linkUrl: '' },
-            { id: 203, category: '景點', title: '흰여울문화마을 白淺灘文化村', time: '14:00~16:00', note: '下車地點：해빙모먼트 Having moment咖啡店 →藍色小房子188-1號旁巷子往下走 可以看到景點A', address: '부산 영도구 절영로 196 해빙모먼트', naverUrl: 'https://naver.me/GXFV1HpJ', transitMode: '計程車', transitTime: '40', taxiFee: '18300', photos: [], linkUrl: '' },
-            { id: 204, category: '景點', title: '回廣安里逛逛 / 晚餐：이낙에산다 광안리본점 章腸蝦鍋', time: '17:00~20:00', note: '下車地點：광안리관광안내소 廣安里旅遊諮詢處 (https://naver.me/xzxmTb5m)', address: '부산 수영구 남천바다로10번길 68 1층 이낙에산다', naverUrl: 'https://naver.me/xSBoXMyG', transitMode: '計程車', transitTime: '25', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 205, category: '景點', title: '彈性行程2選1：황령산 봉수대 荒嶺山夜景 或 廣安里海邊', time: '20:00~', note: '計程車費：去程₩8,000、返程₩11,600', address: '부산 부산진구 전포동 산50-18', naverUrl: 'https://naver.me/xNpbw4Xw', transitMode: '計程車', transitTime: '10', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 206, category: '美食', title: '宵夜2選1：맹구포차 居酒屋 或 푸라닭 PURADAK炸雞', time: '22:00~', openHours: '居酒屋: 18:00~04:00 / 炸雞: 12:00~24:00', note: '炸雞車程約10分(₩6,600)(可叫外送)，推薦口味:黑蒜炸雞/烤玉米起司/墨西哥辣椒', address: '부산 수영구 남천바다로33번길 72 1층 (居酒屋) / 부산 수영구 광안해변로 446 (炸雞)', naverUrl: 'https://naver.me/Fz8CYxyt', taxiFee: '6600', photos: [], linkUrl: '' }
+            { id: 200, category: '其他', title: '從民宿出發', time: '09:30', transitMode: '計程車', transitTime: '40', taxiFee: '22000', photos: [] },
+            { id: 201, category: '景點', title: '송도 베이스테이션(해상케이블카) 松島纜車', time: '10:10~12:00', openHours: '09:00~22:00', address: '부산 서구 송도해변로 171', naverUrl: 'https://naver.me/FvTJ9azl', transitMode: '計程車', transitTime: '30', taxiFee: '11100', photos: [] },
+            { id: 202, category: '美食', title: '午餐：태종대짬뽕 太宗台炒瑪麵', time: '12:30~14:00', openHours: '09:30~21:30，週三休息', address: '부산 영도구 태종로 805 태짬', naverUrl: 'https://naver.me/5MvcLg2O', transitMode: '計程車', transitTime: '15', taxiFee: '8100', photos: [] },
+            { id: 203, category: '景點', title: '흰여울문화마을 白淺灘文化村', time: '14:00~16:00', note: '下車地點：해빙모먼트 Having moment咖啡店 →藍色小房子188-1號旁巷子往下走 可以看到景點A', address: '부산 영도구 절영로 196 해빙모먼트', naverUrl: 'https://naver.me/GXFV1HpJ', transitMode: '計程車', transitTime: '40', taxiFee: '18300', photos: [] },
+            { id: 204, category: '景點', title: '回廣安里逛逛 / 晚餐：이낙에산다 광안리본점 章腸蝦鍋', time: '17:00~20:00', note: '下車地點：광안리관광안내소 廣安里旅遊諮詢處 (https://naver.me/xzxmTb5m)', address: '부산 수영구 남천바다로10번길 68 1층 이낙에산다', naverUrl: 'https://naver.me/xSBoXMyG', transitMode: '計程車', transitTime: '25', taxiFee: '', photos: [] },
+            { id: 205, category: '景點', title: '彈性行程2選1：황령산 봉수대 荒嶺山夜景 或 廣安里海邊', time: '20:00~', note: '計程車費：去程₩8,000、返程₩11,600', address: '부산 부산진구 전포동 산50-18', naverUrl: 'https://naver.me/xNpbw4Xw', transitMode: '計程車', transitTime: '10', taxiFee: '', photos: [] },
+            { id: 206, category: '美食', title: '宵夜2選1：맹구포차 居酒屋 或 푸라닭 PURADAK炸雞', time: '22:00~', openHours: '居酒屋: 18:00~04:00 / 炸雞: 12:00~24:00', note: '炸雞車程約10分(₩6,600)(可叫外送)，推薦口味:黑蒜炸雞/烤玉米起司/墨西哥辣椒', address: '부산 수영구 남천바다로33번길 72 1층 (居酒屋) / 부산 수영구 광안해변로 446 (炸雞)', naverUrl: 'https://naver.me/Fz8CYxyt', taxiFee: '6600', photos: [] }
           ],
           2: [
-            { id: 301, category: '景點', title: '감천문화마을 甘川洞文化村 & ibgogage韓服體驗', time: '09:30~12:00', note: '10:00後店家才有開。韓服體驗可憑釜山Pass兌換(天氣熱就不體驗)', address: '부산 사하구 감내2로 180-1 입고가게', naverUrl: 'https://naver.me/IItc6HR9', transitMode: '搭車', transitTime: '10', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 302, category: '美食', title: '부평깡통시장 富平罐頭市場 (午餐：일신 명품 한우 名品韓牛)', time: '12:00~15:00', openHours: '名品韓牛: 11:00~21:30', note: '含國際市場逛棉被 (영일침구 永一寢具: 부산 중구 중구로 36 국제시장 4공구 B동 1층 / https://naver.me/513kXLnQ)', address: '부산 중구 중구로43번길 42 일신명품한우', naverUrl: 'https://naver.me/x4FLdDfi', transitMode: '搭車', transitTime: '30', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 303, category: '住宿', title: '到海雲台民宿放行李', time: '15:30~16:15', address: '부산시 해운대해변로 298번길 29, 해운대 푸르지오시티', naverUrl: 'https://naver.me/5nh1UWce', transitMode: '搭車', transitTime: '25', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 304, category: '景點', title: '해동용궁사 海東龍宮', time: '17:00~18:00', openHours: '04:00~19:20', address: '부산 기장군 기장읍 용궁길 86 해동용궁사', naverUrl: 'https://naver.me/58NdWaSm', transitMode: '搭車', transitTime: '21', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 305, category: '美食', title: '晚餐：기장명품대게 名品巨蟹', time: '18:30~20:00', openHours: '10:00~21:00', note: '18:30包車結束', address: '부산 기장군 기장읍 차성동로73번길 5', naverUrl: 'https://naver.me/FY3z1DKO', photos: [], linkUrl: '' }
+            { id: 301, category: '景點', title: '감천문화마을 甘川洞文化村 & ibgogage韓服體驗', time: '09:30~12:00', note: '10:00後店家才有開。韓服體驗可憑釜山Pass兌換(天氣熱就不體驗)', address: '부산 사하구 감내2로 180-1 입고가게', naverUrl: 'https://naver.me/IItc6HR9', transitMode: '搭車', transitTime: '10', taxiFee: '', photos: [] },
+            { id: 302, category: '美食', title: '부평깡통시장 富平罐頭市場 (午餐：일신 명품 한우 名品韓牛)', time: '12:00~15:00', openHours: '名品韓牛: 11:00~21:30', note: '含國際市場逛棉被 (영일침구 永一寢具: 부산 중구 중구로 36 국제시장 4공구 B동 1층 / https://naver.me/513kXLnQ)', address: '부산 중구 중구로43번길 42 일신명품한우', naverUrl: 'https://naver.me/x4FLdDfi', transitMode: '搭車', transitTime: '30', taxiFee: '', photos: [] },
+            { id: 303, category: '住宿', title: '到海雲台民宿放行李', time: '15:30~16:15', address: '부산시 해운대해변로 298번길 29, 해운대 푸르지오시티', naverUrl: 'https://naver.me/5nh1UWce', transitMode: '搭車', transitTime: '25', taxiFee: '', photos: [] },
+            { id: 304, category: '景點', title: '해동용궁사 海東龍宮', time: '17:00~18:00', openHours: '04:00~19:20', address: '부산 기장군 기장읍 용궁길 86 해동용궁사', naverUrl: 'https://naver.me/58NdWaSm', transitMode: '搭車', transitTime: '21', taxiFee: '', photos: [] },
+            { id: 305, category: '美食', title: '晚餐：기장명품대게 名品巨蟹', time: '18:30~20:00', openHours: '10:00~21:00', note: '18:30包車結束', address: '부산 기장군 기장읍 차성동로73번길 5', naverUrl: 'https://naver.me/FY3z1DKO', photos: [] }
           ],
           3: [
-            { id: 401, category: '美食', title: '早餐：조선대가곰탕 해운대미포점 牛骨湯', time: '09:30~11:00', openHours: '08:00~21:00', address: '부산 해운대구 달맞이길62번길 9-1 조선대가곰탕', naverUrl: 'https://naver.me/xSBoXg2J', transitMode: '走路', transitTime: '10', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 402, category: '景點', title: '膠囊列車：尾浦站到青沙浦站', time: '11:30~12:00', note: '到冰淇淋店(젤라또조이 해운대미포점)旁的廣場步道進到車站', address: '부산 해운대구 달맞이길62번길 17 1층', naverUrl: 'https://naver.me/5UVeuQ8A', transitMode: '搭車', transitTime: '30', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 403, category: '景點', title: '青沙浦站換票', time: '12:00~13:00', note: '青沙浦站到站後，去海岸列車站換票', address: '부산 해운대구 청사포로 116 청사포정거장', naverUrl: 'https://naver.me/xq3aEIjM', transitMode: '走路', transitTime: '5', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 404, category: '美食', title: '午餐：청사포쌀국수 青沙浦河粉', time: '13:00~15:00', openHours: '10:00~18:00', address: '부산 해운대구 청사포로128번길 6 청사포쌀국수', naverUrl: 'https://naver.me/Fx2wpuxl', transitMode: '走路', transitTime: '5', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 405, category: '景點', title: '海岸列車：青沙浦站到松亭站', time: '15:00~15:30', transitMode: '計程車', transitTime: '10', taxiFee: '7000', photos: [], linkUrl: '' },
-            { id: 406, category: '景點', title: 'Skyline滑坡列車', time: '15:30~17:00',note: '17:00前一定要到', openHours: '10:00~18:00', address: '부산 기장군 기장읍 기장해안로 205', naverUrl: 'https://naver.me/xtNI3jDH', transitMode: '計程車', transitTime: '10', taxiFee: '7000', photos: [], linkUrl: '' },
-            { id: 407, category: '景點', title: '到松亭站坐 海岸列車➔松亭站到尾浦站', time: '17:15~18:00', address: '부산 해운대구 송정중앙로8번길 60', naverUrl: 'https://naver.me/FgEZQXbQ', transitMode: '走路', transitTime: '15', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 408, category: '美食', title: '晚餐：풍천만민물장어 해운대본점 烤鰻魚', time: '18:30~20:00', openHours: '11:00~22:00', address: '부산 해운대구 달맞이길 22 1층', naverUrl: 'https://naver.me/xllYakSo', transitMode: '走路', transitTime: '10', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 409, category: '購物', title: '海雲台逛逛購物', time: '20:00~', photos: [], linkUrl: '' }
+            { id: 401, category: '美食', title: '早餐：조선대가곰탕 해운대미포점 牛骨湯', time: '09:30~11:00', openHours: '08:00~21:00', address: '부산 해운대구 달맞이길62번길 9-1 조선대가곰탕', naverUrl: 'https://naver.me/xSBoXg2J', transitMode: '走路', transitTime: '10', taxiFee: '', photos: [] },
+            { id: 402, category: '景點', title: '膠囊列車：尾浦站到青沙浦站', time: '11:30~12:00', note: '到冰淇淋店(젤라또조이 해운대미포점)旁的廣場步道進到車站', address: '부산 해운대구 달맞이길62번길 17 1층', naverUrl: 'https://naver.me/5UVeuQ8A', transitMode: '搭車', transitTime: '30', taxiFee: '', photos: [] },
+            { id: 403, category: '景點', title: '青沙浦站換票', time: '12:00~13:00', note: '青沙浦站到站後，去海岸列車站換票', address: '부산 해운대구 청사포로 116 청사포정거장', naverUrl: 'https://naver.me/xq3aEIjM', transitMode: '走路', transitTime: '5', taxiFee: '', photos: [] },
+            { id: 404, category: '美食', title: '午餐：청사포쌀국수 青沙浦河粉', time: '13:00~15:00', openHours: '10:00~18:00', address: '부산 해운대구 청사포로128번길 6 청사포쌀국수', naverUrl: 'https://naver.me/Fx2wpuxl', transitMode: '走路', transitTime: '5', taxiFee: '', photos: [] },
+            { id: 405, category: '景點', title: '海岸列車：青沙浦站到松亭站', time: '15:00~15:30', transitMode: '計程車', transitTime: '10', taxiFee: '7000', photos: [] },
+            { id: 406, category: '景點', title: 'Skyline滑坡列車', time: '15:30~17:00',note: '17:00前一定要到', openHours: '10:00~18:00', address: '부산 기장군 기장읍 기장해안로 205', naverUrl: 'https://naver.me/xtNI3jDH', transitMode: '計程車', transitTime: '10', taxiFee: '7000', photos: [] },
+            { id: 407, category: '景點', title: '到松亭站坐 海岸列車➔松亭站到尾浦站', time: '17:15~18:00', address: '부산 해운대구 송정중앙로8번길 60', naverUrl: 'https://naver.me/FgEZQXbQ', transitMode: '走路', transitTime: '15', taxiFee: '', photos: [] },
+            { id: 408, category: '美食', title: '晚餐：풍천만민물장어 해운대본점 烤鰻魚', time: '18:30~20:00', openHours: '11:00~22:00', address: '부산 해운대구 달맞이길 22 1층', naverUrl: 'https://naver.me/xllYakSo', transitMode: '走路', transitTime: '10', taxiFee: '', photos: [] },
+            { id: 409, category: '購物', title: '海雲台逛逛購物', time: '20:00~', photos: [] }
           ],
           4: [
-            { id: 501, category: '美食', title: '早餐：해운대삼계탕 人參蔘雞湯', time: '09:30~11:00', openHours: '10:00~22:00', address: '부산 해운대구 달맞이길 6', naverUrl: 'https://naver.me/xNpbwa6l', transitMode: '公車', transitTime: '25', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 502, category: '購物', title: '逛新世界百貨', time: '11:30~13:00', openHours: '10:30~20:30', address: '부산 해운대구 센텀남대로 35 , 1층', naverUrl: 'https://naver.me/5XcVqz6G', transitMode: '走路', transitTime: '5', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 503, category: '景點', title: 'SPA LAND汗蒸幕', time: '13:00~19:00', note: '免費體驗4小時，館內消費總金額達10,000韓元以上，會加贈2小時(15:45~19:00 女生去醫美，診所步行約6分，地址：부산 해운대구 센텀2로 19 센텀코아 2층)', naverUrl: 'https://naver.me/GII4VFmz', photos: [], linkUrl: '' },
-            { id: 504, category: '美食', title: '晚餐2選1：동동국밥 豬肉米腸湯飯 或 스시 마이우 迴轉壽司', time: '19:00~20:30', openHours: '湯飯: 11:00~21:00 / 壽司: 11:00~22:00', address: '부산 해운대구 센텀동로 25 (湯飯) / 부산 해운대구 센텀2로 33 (壽司)', naverUrl: 'https://naver.me/5Vx0wBvl', transitMode: '坐公車', transitTime: '20', taxiFee: '', photos: [], linkUrl: '' },
-            { id: 505, category: '購物', title: '回台灣前採購', time: '20:30~', photos: [], linkUrl: '' }
+            { id: 501, category: '美食', title: '早餐：해운대삼계탕 人參蔘雞湯', time: '09:30~11:00', openHours: '10:00~22:00', address: '부산 해운대구 달맞이길 6', naverUrl: 'https://naver.me/xNpbwa6l', transitMode: '公車', transitTime: '25', taxiFee: '', photos: [] },
+            { id: 502, category: '購物', title: '逛新世界百貨', time: '11:30~13:00', openHours: '10:30~20:30', address: '부산 해운대구 센텀남대로 35 , 1층', naverUrl: 'https://naver.me/5XcVqz6G', transitMode: '走路', transitTime: '5', taxiFee: '', photos: [] },
+            { id: 503, category: '景點', title: 'SPA LAND汗蒸幕', time: '13:00~19:00', note: '免費體驗4小時，館內消費總金額達10,000韓元以上，會加贈2小時(15:45~19:00 女生去醫美，診所步行約6分，地址：부산 해운대구 센텀2로 19 센텀코아 2층)', naverUrl: 'https://naver.me/GII4VFmz', photos: [] },
+            { id: 504, category: '美食', title: '晚餐2選1：동동국밥 豬肉米腸湯飯 或 스시 마이우 迴轉壽司', time: '19:00~20:30', openHours: '湯飯: 11:00~21:00 / 壽司: 11:00~22:00', address: '부산 해운대구 센텀동로 25 (湯飯) / 부산 해운대구 센텀2로 33 (壽司)', naverUrl: 'https://naver.me/5Vx0wBvl', transitMode: '坐公車', transitTime: '20', taxiFee: '', photos: [] },
+            { id: 505, category: '購物', title: '回台灣前採購', time: '20:30~', photos: [] }
           ],
           5: [
-            { id: 601, category: '其他', title: '包車到機場', time: '10:30', transitMode: '搭車', transitTime: '50', photos: [], linkUrl: '' },
-            { id: 602, category: '航班', title: '釜山 ➔ 台北(桃園)', time: '14:15~15:50', flightNo: 'BX 791', depCode: 'PUS', depTime: '14:15', arrCode: 'TPE', arrTime: '15:50', duration: '2h 35m', note: '11:30 到機場後辦理退稅、吃午餐', photos: [], linkUrl: '' }
+            { id: 601, category: '其他', title: '包車到機場', time: '10:30', transitMode: '搭車', transitTime: '50', photos: [] },
+            { id: 602, category: '航班', title: '釜山 ➔ 台北(桃園)', time: '14:15~15:50', flightNo: 'BX 791', depCode: 'PUS', depTime: '14:15', arrCode: 'TPE', arrTime: '15:50', duration: '2h 35m', note: '11:30 到機場後辦理退稅、吃午餐', photos: [] }
           ]
         },
-        itineraryData: {},
 
         infoCards: [
           {
@@ -1191,42 +1114,12 @@
           groups[loc].push({ ...item, originalIndex: index });
         });
         return groups;
+      },
+      weatherIcon() {
+        return 'fa-solid fa-cloud-sun';
       }
     },
-    mounted() {
-      // 實時監聽 Firestore 上的旅遊資料 (集合: busanTrip, 文件: mainData)
-      const tripDocRef = doc(db, "busanTrip", "mainData");
-      onSnapshot(tripDocRef, (docSnap) => {
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          this.itineraryData = data.itineraryData || this.defaultItineraryData;
-          this.shoppingList = data.shoppingList || [];
-          this.expenses = data.expenses || [];
-        } else {
-          // 若無遠端資料，初始化並寫入預設行程
-          this.itineraryData = this.defaultItineraryData;
-          this.syncToFirebase();
-        }
-      }, (error) => {
-        console.error("Firestore 即時監聽失敗：", error);
-      });
-    },
     methods: {
-      // 將目前的全站狀態同步更新至 Firestore
-      async syncToFirebase() {
-        try {
-          const tripDocRef = doc(db, "busanTrip", "mainData");
-          await setDoc(tripDocRef, {
-            itineraryData: this.itineraryData,
-            shoppingList: this.shoppingList,
-            expenses: this.expenses
-          });
-        } catch (error) {
-          console.error("儲存至 Firebase 失敗：", error);
-          this.showToast('資料同步失敗，請再試一次');
-        }
-      },
-
       speakKorean(text) {
         if ('speechSynthesis' in window) {
           window.speechSynthesis.cancel();
@@ -1285,7 +1178,6 @@
         let currentIdx = modes.indexOf(item.transitMode || '計程車');
         let nextIdx = (currentIdx + 1) % modes.length;
         item.transitMode = modes[nextIdx];
-        this.syncToFirebase();
       },
 
       editTransitTime(item) {
@@ -1293,7 +1185,6 @@
         const newTime = prompt('請輸入所需交通時間 (分鐘):', item.transitTime || '15');
         if (newTime !== null && newTime.trim() !== '') {
           item.transitTime = newTime.trim();
-          this.syncToFirebase();
         }
       },
 
@@ -1302,20 +1193,19 @@
         const newFee = prompt('請輸入預估計程車費用 (韓元 KRW):', item.taxiFee || '');
         if (newFee !== null) {
           item.taxiFee = newFee.trim();
-          this.syncToFirebase();
         }
       },
 
       getTransitIcon(mode) {
-        switch (mode) {
-          case '坐公車': return 'fa-solid fa-bus';
-          case '走路': return 'fa-solid fa-person-walking';
-          case '開車': return 'fa-solid fa-car';
-          case '搭車': return 'fa-solid fa-van-shuttle';
-          case '計程車':
-          default: return 'fa-solid fa-taxi';
-        }
-      },
+  switch (mode) {
+    case '坐公車': return 'fa-solid fa-bus';
+    case '走路': return 'fa-solid fa-person-walking';
+    case '開車': return 'fa-solid fa-car';
+    case '搭車': return 'fa-solid fa-van-shuttle';
+    case '計程車':
+    default: return 'fa-solid fa-taxi';
+  }
+},
 
       handleFileUpload(event) {
         const file = event.target.files[0];
@@ -1367,7 +1257,7 @@
       openAddModalWithAuth() {
         if (this.checkPassword()) {
           this.isEditMode = false;
-          this.modalItem = { category: '景點', transitMode: '計程車', transitTime: '15', taxiFee: '', photos: [], linkUrl: '' };
+          this.modalItem = { category: '景點', transitMode: '計程車', transitTime: '15', taxiFee: '', photos: [] };
           this.showItineraryModal = true;
         }
       },
@@ -1377,7 +1267,6 @@
           this.isEditMode = true;
           this.modalItem = JSON.parse(JSON.stringify(item));
           if (!this.modalItem.photos) this.modalItem.photos = [];
-          if (!this.modalItem.linkUrl) this.modalItem.linkUrl = '';
           this.showItineraryModal = true;
         }
       },
@@ -1403,7 +1292,6 @@
         this.itineraryData[this.selectedDayIndex] = dayList;
         this.sortDayItinerary(this.selectedDayIndex);
         this.showItineraryModal = false;
-        this.syncToFirebase();
       },
 
       confirmDeleteItinerary() {
@@ -1411,7 +1299,6 @@
           let dayList = this.itineraryData[this.selectedDayIndex] || [];
           this.itineraryData[this.selectedDayIndex] = dayList.filter(i => i.id !== this.modalItem.id);
           this.showItineraryModal = false;
-          this.syncToFirebase();
         }
       },
 
@@ -1432,22 +1319,15 @@
           return;
         }
         this.shoppingList.push({ ...this.newShopping });
-        this.newShopping = { name: '', quantity: '', location: '', note: '', image: '', isBought: false };
+        this.newShopping = { name: '', location: '', note: '', image: '', isBought: false };
         this.showShoppingModal = false;
-        this.syncToFirebase();
-      },
-
-      openShoppingPreview(item) {
-        this.previewShoppingItem = item;
       },
 
       toggleBought(idx) {
         this.shoppingList[idx].isBought = !this.shoppingList[idx].isBought;
-        this.syncToFirebase();
       },
       deleteShoppingItem(idx) {
         this.shoppingList.splice(idx, 1);
-        this.syncToFirebase();
       },
 
       saveExpenseItem() {
@@ -1458,16 +1338,13 @@
         this.expenses.push({ ...this.newExpense });
         this.newExpense = { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0], photos: [] };
         this.showExpenseModal = false;
-        this.syncToFirebase();
       },
 
       deleteExpense(idx) {
         this.expenses.splice(idx, 1);
-        this.syncToFirebase();
       }
     }
   }).mount('#app');
 </script>
-
 </body>
 </html>
