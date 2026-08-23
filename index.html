@@ -120,25 +120,6 @@
         </select>
       </div>
 
-      <!-- 天氣資訊卡 (包含最高溫、最低溫與體感溫度) -->
-      <div class="bg-gradient-to-r from-blue-400 to-ocean-dark text-white rounded-2xl p-4 mb-4 shadow-sm flex items-center justify-between">
-        <div class="flex items-center space-x-3">
-          <i :class="weatherIcon" class="text-3xl"></i>
-          <div>
-            <div class="text-xs opacity-90">釜山即時天氣</div>
-            <div class="text-base font-bold leading-tight">{{ weather.temp }}°C <span class="text-xs font-normal opacity-90">(體感 {{ weather.feelsLike }}°C)</span></div>
-            <div class="text-xs font-medium opacity-90 mt-0.5">
-              <span>{{ weather.desc }}</span>
-              <span class="ml-2 font-normal">高 {{ weather.maxTemp }}°C / 低 {{ weather.minTemp }}°C</span>
-            </div>
-          </div>
-        </div>
-        <div class="text-right text-xs opacity-90 space-y-1">
-          <div><i class="fa-solid fa-umbrella mr-1"></i>降雨率: {{ weather.pop }}%</div>
-          <div><i class="fa-solid fa-wind mr-1"></i>風速: {{ weather.wind }} m/s</div>
-        </div>
-      </div>
-
       <!-- 行程清單 -->
       <div id="itinerary-list" class="space-y-3">
         <template v-for="(item, idx) in currentDayItinerary" :key="item.id">
@@ -745,8 +726,6 @@
         quickLocations: ['樂天超市', 'Olive Young', '國際市場', '大創', '免稅店', '便利商店'],
         newExpense: { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0], photos: [] },
 
-        weather: { temp: 26, maxTemp: 28, minTemp: 21, feelsLike: 28, desc: '多雲晴朗', pop: 10, wind: 2.1 },
-
         days: [
           { week: 'Mon', date: '8/31' },
           { week: 'Tue', date: '9/1' },
@@ -1114,9 +1093,6 @@
           groups[loc].push({ ...item, originalIndex: index });
         });
         return groups;
-      },
-      weatherIcon() {
-        return 'fa-solid fa-cloud-sun';
       }
     },
     methods: {
@@ -1197,15 +1173,15 @@
       },
 
       getTransitIcon(mode) {
-  switch (mode) {
-    case '坐公車': return 'fa-solid fa-bus';
-    case '走路': return 'fa-solid fa-person-walking';
-    case '開車': return 'fa-solid fa-car';
-    case '搭車': return 'fa-solid fa-van-shuttle'; // 或選用 fa-car-side / fa-bus-simple
-    case '計程車':
-    default: return 'fa-solid fa-taxi';
-  }
-},
+        switch (mode) {
+          case '坐公車': return 'fa-solid fa-bus';
+          case '走路': return 'fa-solid fa-person-walking';
+          case '開車': return 'fa-solid fa-car';
+          case '搭車': return 'fa-solid fa-van-shuttle';
+          case '計程車':
+          default: return 'fa-solid fa-taxi';
+        }
+      },
 
       handleFileUpload(event) {
         const file = event.target.files[0];
