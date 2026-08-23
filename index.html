@@ -727,24 +727,7 @@
     data() {
   return {
         currentTab: 'itinerary', // 👈 改為 'itinerary' (每日行程)
-        selectedDayIndex: 0,
-        filterCategory: '全部',
-        selectedKoreanCategory: '全部',
-        expenseFilterDate: '',
-        expenseFilterCategory: '全部',
-        krwInput: null,
-        toastMessage: '',
-        previewImageUrl: null,
-        showItineraryModal: false,
-        showShoppingModal: false,
-        showExpenseModal: false,
-        isEditMode: false,
-        modalItem: { photos: [] },
-        shoppingList: [],
-        expenses: [],
-        newShopping: { name: '', location: '', note: '', image: '', isBought: false },
-        quickLocations: ['樂天超市', 'Olive Young', '國際市場', '大創', '免稅店', '便利商店'],
-        newExpense: { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0], photos: [] },
+        selectedDayIndex: 0,},
 
         days: [
           { week: 'Mon', date: '8/31' },
