@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <!-- 1. 一般網頁標題（分頁籤顯示的名稱） -->
+  <!-- 1. 一般網頁標題 -->
   <title>2026釜山之旅</title>
 
   <!-- 2. 社群分享標題與副標題 (Open Graph) -->
@@ -51,7 +51,7 @@
 </head>
 <body class="flex justify-center min-h-screen">
 
-<div id="app" class="w-full max-w-md bg-[#F4F9F9] min-h-screen shadow-2xl relative flex flex-col pb-36">
+<div id="app" class="w-full max-w-md bg-[#F4F9F9] min-h-screen shadow-2xl relative flex flex-col pb-24">
 
   <!-- Toast 複製成功提示訊息 -->
   <div v-if="toastMessage" class="fixed top-5 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-4 py-2 rounded-full shadow-lg z-50 transition-all duration-300">
@@ -64,7 +64,7 @@
     <button class="absolute top-5 right-5 text-white text-2xl"><i class="fa-solid fa-xmark"></i></button>
   </div>
 
-  <!-- 頁首 Banner (250px 高度) -->
+  <!-- 頁首 Banner -->
   <div class="relative h-[250px] w-full overflow-hidden">
     <img src="banner.jpg" alt="Busan Header" class="w-full h-full object-cover object-left" onerror="this.src='https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1920&q=80'">
     <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40"></div>
@@ -96,7 +96,6 @@
 
     <!-- 1. 每日行程頁面 -->
     <div v-if="currentTab === 'itinerary'">
-      <!-- 日期橫向選擇器 -->
       <div class="flex space-x-3 overflow-x-auto hide-scrollbar pb-3 mb-4">
         <button v-for="(day, index) in days" :key="index"
                 @click="selectedDayIndex = index"
@@ -107,7 +106,6 @@
         </button>
       </div>
 
-      <!-- 分類篩選 -->
       <div class="flex justify-between items-center mb-4">
         <select v-model="filterCategory" class="bg-white border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 outline-none shadow-sm">
           <option value="全部">全部類型</option>
@@ -120,14 +118,27 @@
         </select>
       </div>
 
-      <!-- 行程清單 -->
+      <div class="bg-gradient-to-r from-blue-400 to-ocean-dark text-white rounded-2xl p-4 mb-4 shadow-sm flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <i :class="weatherIcon" class="text-3xl"></i>
+          <div>
+            <div class="text-xs opacity-90">釜山即時天氣</div>
+            <div class="text-base font-bold leading-tight">{{ weather.temp }}°C <span class="text-xs font-normal opacity-90">(體感 {{ weather.feelsLike }}°C)</span></div>
+            <div class="text-xs font-medium opacity-90 mt-0.5">
+              <span>{{ weather.desc }}</span>
+              <span class="ml-2 font-normal">高 {{ weather.maxTemp }}°C / 低 {{ weather.minTemp }}°C</span>
+            </div>
+          </div>
+        </div>
+        <div class="text-right text-xs opacity-90 space-y-1">
+          <div><i class="fa-solid fa-umbrella mr-1"></i>降雨率: {{ weather.pop }}%</div>
+          <div><i class="fa-solid fa-wind mr-1"></i>風速: {{ weather.wind }} m/s</div>
+        </div>
+      </div>
+
       <div id="itinerary-list" class="space-y-3">
         <template v-for="(item, idx) in currentDayItinerary" :key="item.id">
-
-          <!-- 行程卡片外框 -->
           <div :data-id="item.id" class="group relative">
-
-            <!-- 航班卡片專用樣式 -->
             <div v-if="item.category === '航班'" class="bg-gradient-to-br from-slate-800 to-slate-700 text-white p-4 rounded-2xl shadow-sm border border-slate-600">
               <div class="flex justify-between items-center mb-2">
                 <span class="bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">FLIGHT</span>
@@ -150,7 +161,6 @@
                 </div>
               </div>
 
-              <!-- 照片展示區塊 (航班卡片) -->
               <div v-if="item.photos && item.photos.length > 0" class="flex flex-wrap gap-1.5 my-2">
                 <img v-for="(photo, pIdx) in item.photos" :key="pIdx" :src="photo" @click="previewImageUrl = photo" class="w-12 h-12 object-cover rounded-lg border border-slate-500 cursor-pointer hover:opacity-80 transition-opacity">
               </div>
@@ -161,7 +171,6 @@
               </div>
             </div>
 
-            <!-- 一般行程卡片 -->
             <div v-else class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition-shadow relative">
               <div class="flex justify-between items-start">
                 <div class="flex-1">
@@ -173,7 +182,6 @@
                   </div>
                   <h3 class="font-bold text-gray-800 text-base mt-1">{{ item.title }}</h3>
                   
-                  <!-- 點擊直接複製韓文地址 -->
                   <div v-if="item.address" 
                        @click="copyToClipboard(item.address)" 
                        class="mt-1 inline-flex items-center space-x-1.5 text-xs text-ocean-dark bg-ocean-light/50 hover:bg-ocean-light px-2 py-1 rounded-lg cursor-pointer transition-colors border border-ocean/20 group/addr">
@@ -188,19 +196,16 @@
                 </button>
               </div>
 
-              <!-- 詳細資訊欄位 -->
               <div v-if="item.openHours || item.ticket || item.note" class="mt-3 text-xs text-gray-600 bg-gray-50 p-2.5 rounded-xl space-y-1">
                 <div v-if="item.openHours"><i class="fa-regular fa-clock mr-1 text-gray-400"></i>營業時間: {{ item.openHours }}</div>
                 <div v-if="item.ticket"><i class="fa-solid fa-ticket mr-1 text-gray-400"></i>門票費用: {{ item.ticket }}</div>
                 <div v-if="item.note"><i class="fa-regular fa-note-sticky mr-1 text-gray-400"></i>備註: {{ item.note }}</div>
               </div>
 
-              <!-- 照片展示區塊 (小圖) -->
               <div v-if="item.photos && item.photos.length > 0" class="mt-3 flex flex-wrap gap-1.5">
                 <img v-for="(photo, pIdx) in item.photos" :key="pIdx" :src="photo" @click="previewImageUrl = photo" class="w-12 h-12 object-cover rounded-lg border border-gray-200 cursor-pointer hover:scale-105 transition-transform shadow-sm">
               </div>
 
-              <!-- Naver Map 導航按鈕 -->
               <div v-if="item.naverUrl" class="mt-3 flex justify-end">
                 <a :href="item.naverUrl" target="_blank" class="inline-flex items-center space-x-1.5 bg-[#03C75A] text-white text-xs px-3.5 py-1.5 rounded-full font-medium shadow-sm hover:bg-emerald-600 transition-colors">
                   <i class="fa-solid fa-location-arrow"></i>
@@ -208,10 +213,8 @@
                 </a>
               </div>
             </div>
-
           </div>
 
-          <!-- 交通時間與預估費用卡片 -->
           <div v-if="idx < currentDayItinerary.length - 1" class="flex items-center justify-center py-1">
             <div class="flex items-center space-x-2 bg-white/80 border border-gray-200 px-3 py-1.5 rounded-full text-xs text-gray-600 shadow-sm">
               <button @click="changeTransitMode(item)" class="flex items-center space-x-1 font-semibold text-ocean-dark hover:opacity-80">
@@ -223,7 +226,6 @@
                 <span>{{ item.transitTime || '15' }} 分鐘</span>
                 <i class="fa-solid fa-pen text-[10px] text-gray-400"></i>
               </button>
-              <!-- 若為計程車則顯示預估車資 -->
               <template v-if="(item.transitMode || '計程車') === '計程車'">
                 <span class="text-gray-300">|</span>
                 <button @click="editTaxiFee(item)" class="flex items-center space-x-1 hover:text-ocean-dark text-amber-600 font-medium">
@@ -233,12 +235,10 @@
               </template>
             </div>
           </div>
-
         </template>
       </div>
 
-      <!-- 新增行程 Floating Button -->
-      <button @click="openAddModalWithAuth" class="fixed bottom-24 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30 hover:scale-105 active:scale-95 transition-transform">
+      <button @click="openAddModalWithAuth" class="fixed bottom-6 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30 hover:scale-105 active:scale-95 transition-transform">
         <i class="fa-solid fa-plus"></i>
       </button>
     </div>
@@ -303,7 +303,6 @@
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
@@ -429,15 +428,13 @@
         </div>
       </div>
 
-      <button @click="showShoppingModal = true" class="fixed bottom-24 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30">
+      <button @click="showShoppingModal = true" class="fixed bottom-6 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30">
         <i class="fa-solid fa-plus"></i>
       </button>
     </div>
 
     <!-- 5. 花費記帳頁面 -->
     <div v-if="currentTab === 'expenses'" class="space-y-4">
-      
-      <!-- 篩選列：極簡雙欄版 -->
       <div class="grid grid-cols-2 gap-2 bg-white p-2.5 rounded-2xl shadow-sm border border-gray-100">
         <div class="min-w-0">
           <label class="text-[10px] text-gray-400 block mb-0.5">日期</label>
@@ -461,7 +458,6 @@
         目前沒有符合條件的記帳項目，點擊右下角「+」新增！
       </div>
 
-      <!-- 記帳項目列表 -->
       <div class="space-y-2">
         <div v-for="exp in filteredExpenses" :key="exp.originalIndex" class="bg-white p-3.5 rounded-2xl shadow-sm border border-gray-100 flex flex-col space-y-2">
           <div class="flex justify-between items-center">
@@ -480,21 +476,19 @@
             </div>
           </div>
 
-          <!-- 花費照片展示區塊 (點擊可放大) -->
           <div v-if="exp.photos && exp.photos.length > 0" class="flex flex-wrap gap-1.5 pt-1 border-t border-gray-50">
             <img v-for="(photo, pIdx) in exp.photos" :key="pIdx" :src="photo" @click="previewImageUrl = photo" class="w-12 h-12 object-cover rounded-lg border border-gray-200 cursor-pointer hover:scale-105 transition-transform shadow-sm">
           </div>
         </div>
       </div>
 
-      <!-- 累積總花費區塊 -->
       <div class="bg-gradient-to-r from-ocean-dark to-ocean-deep text-white p-5 rounded-2xl shadow-md mt-4">
         <span class="text-xs opacity-80">累積總花費</span>
         <div class="text-3xl font-extrabold mt-1">₩ {{ totalExpenses.toLocaleString() }}</div>
         <div class="text-xs opacity-80 mt-1">約合 NT$ {{ Math.round(totalExpenses * 0.024).toLocaleString() }}</div>
       </div>
 
-      <button @click="showExpenseModal = true" class="fixed bottom-24 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30">
+      <button @click="showExpenseModal = true" class="fixed bottom-6 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30">
         <i class="fa-solid fa-plus"></i>
       </button>
     </div>
@@ -700,34 +694,50 @@
 
 </div>
 
-<!-- 引入 Firebase SDK 並綁定至 Vue 應用 -->
+<!-- 引入 Firebase SDK (全域 ES Module 綁定) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  // Firebase 設定
   const firebaseConfig = {
-    apiKey: " AIZASYDZQ7TNXRMYO1G10ARKIMOQ17L_SSCR31O",
-    authDomain: " Gotobusan-dfd8d.firebaseapp.com",
-    projectId: " gotobusan-dfd8d",
-    storageBucket: " Gotobusan-dfd8d.firebaseapp.com",
+    apiKey: "AIZASYDZQ7TNXRMYO1G10ARKIMOQ17L_SSCR31O",
+    authDomain: "Gotobusan-dfd8d.firebaseapp.com",
+    projectId: "gotobusan-dfd8d",
+    storageBucket: "Gotobusan-dfd8d.firebaseapp.com",
     messagingSenderId: "269046746558",
     appId: "1:269046746558:web:0634c6c52f424978263def"
   };
 
-  let db = null;
-  if (firebaseConfig.apiKey !== "AIZASYDZQ7TNXRMYO1G10ARKIMOQ17L_SSCR31O") {
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.firestore();
-  }
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const travelDocRef = doc(db, "travelApp", "gotobusan");
 
   const { createApp } = Vue;
 
-  createApp({
+  const vueApp = createApp({
     data() {
-  return {
-        currentTab: 'itinerary', // 👈 改為 'itinerary' (每日行程)
-        selectedDayIndex: 0,},
+      return {
+        currentTab: 'itinerary',
+        selectedDayIndex: 0,
+        filterCategory: '全部',
+        selectedKoreanCategory: '全部',
+        expenseFilterDate: '',
+        expenseFilterCategory: '全部',
+        krwInput: null,
+        toastMessage: '',
+        previewImageUrl: null,
+        showItineraryModal: false,
+        showShoppingModal: false,
+        showExpenseModal: false,
+        isEditMode: false,
+        modalItem: { photos: [] },
+        shoppingList: [],
+        expenses: [],
+        newShopping: { name: '', location: '', note: '', image: '', isBought: false },
+        quickLocations: ['樂天超市', 'Olive Young', '國際市場', '大創', '免稅店', '便利商店'],
+        newExpense: { category: '飲食', name: '', amount: '', payMethod: '現金', date: new Date().toISOString().split('T')[0], photos: [] },
+
+        weather: { temp: 26, maxTemp: 28, minTemp: 21, feelsLike: 28, desc: '多雲晴朗', pop: 10, wind: 2.1 },
 
         days: [
           { week: 'Mon', date: '8/31' },
@@ -739,44 +749,14 @@
         ],
 
         quantityTable: [
-          {
-            num: 1,
-            gae: { kr: '한 개', pron: 'Han' },
-            inbun: { kr: '1 인분', pron: 'Il' },
-            jan: { kr: '한 잔', pron: 'Han' },
-            byeong: { kr: '한 병', pron: 'Han' }
-          },
-          {
-            num: 2,
-            gae: { kr: '두 개', pron: 'Du' },
-            inbun: { kr: '2 인분', pron: 'I' },
-            jan: { kr: '두 잔', pron: 'Du' },
-            byeong: { kr: '두 병', pron: 'Du' }
-          },
-          {
-            num: 3,
-            gae: { kr: '세 개', pron: 'Se' },
-            inbun: { kr: '3 인분', pron: 'Sam' },
-            jan: { kr: '세 잔', pron: 'Se' },
-            byeong: { kr: '세 병', pron: 'Se' }
-          },
-          {
-            num: 4,
-            gae: { kr: '네 개', pron: 'Ne' },
-            inbun: { kr: '4 인분', pron: 'Sa' },
-            jan: { kr: '네 잔', pron: 'Ne' },
-            byeong: { kr: '네 병', pron: 'Ne' }
-          },
-          {
-            num: 5,
-            gae: { kr: '다섯 개', pron: 'Daseot' },
-            inbun: { kr: '5 인분', pron: 'O' },
-            jan: { kr: '다섯 잔', pron: 'Daseot' },
-            byeong: { kr: '다섯 병', pron: 'Daseot' }
-          }
+          { num: 1, gae: { kr: '한 개', pron: 'Han' }, inbun: { kr: '1 인분', pron: 'Il' }, jan: { kr: '한 잔', pron: 'Han' }, byeong: { kr: '한 병', pron: 'Han' } },
+          { num: 2, gae: { kr: '두 개', pron: 'Du' }, inbun: { kr: '2 인분', pron: 'I' }, jan: { kr: '두 잔', pron: 'Du' }, byeong: { kr: '두 병', pron: 'Du' } },
+          { num: 3, gae: { kr: '세 개', pron: 'Se' }, inbun: { kr: '3 인분', pron: 'Sam' }, jan: { kr: '세 잔', pron: 'Se' }, byeong: { kr: '세 병', pron: 'Se' } },
+          { num: 4, gae: { kr: '네 개', pron: 'Ne' }, inbun: { kr: '4 인분', pron: 'Sa' }, jan: { kr: '네 잔', pron: 'Ne' }, byeong: { kr: '네 병', pron: 'Ne' } },
+          { num: 5, gae: { kr: '다섯 개', pron: 'Daseot' }, inbun: { kr: '5 인분', pron: 'O' }, jan: { kr: '다섯 잔', pron: 'Daseot' }, byeong: { kr: '다섯 병', pron: 'Daseot' } }
         ],
 
-        defaultItineraryData: {
+        itineraryData: {
           0: [
             { id: 100, category: '其他', title: '出發到星威停車場', time: '07:30~10:00', transitMode: '搭車', transitTime: '10', taxiFee: '', photos: [] },
             { id: 1001, category: '其他', title: '桃園機場第二航廈', time: '10:30~11:30', note: '吃東西、買飛機上要吃的食物(飲料不行)(出境後可以買)', transitMode: '走路', transitTime: '0', taxiFee: '', photos: [] },
@@ -808,7 +788,7 @@
             { id: 403, category: '景點', title: '青沙浦站換票', time: '12:00~13:00', note: '青沙浦站到站後，去海岸列車站換票', address: '부산 해운대구 청사포로 116 청사포정거장', naverUrl: 'https://naver.me/xq3aEIjM', transitMode: '走路', transitTime: '5', taxiFee: '', photos: [] },
             { id: 404, category: '美食', title: '午餐：청사포쌀국수 青沙浦河粉', time: '13:00~15:00', openHours: '10:00~18:00', address: '부산 해운대구 청사포로128번길 6 청사포쌀국수', naverUrl: 'https://naver.me/Fx2wpuxl', transitMode: '走路', transitTime: '5', taxiFee: '', photos: [] },
             { id: 405, category: '景點', title: '海岸列車：青沙浦站到松亭站', time: '15:00~15:30', transitMode: '計程車', transitTime: '10', taxiFee: '7000', photos: [] },
-            { id: 406, category: '景點', title: 'Skyline滑坡列車', time: '15:30~17:00',note: '17:00前一定要到', openHours: '10:00~18:00', address: '부산 기장군 기장읍 기장해안로 205', naverUrl: 'https://naver.me/xtNI3jDH', transitMode: '計程車', transitTime: '10', taxiFee: '7000', photos: [] },
+            { id: 406, category: '景點', title: 'Skyline滑坡列車', time: '15:30~17:00', note: '17:00前一定要到', openHours: '10:00~18:00', address: '부산 기장군 기장읍 기장해안로 205', naverUrl: 'https://naver.me/xtNI3jDH', transitMode: '計程車', transitTime: '10', taxiFee: '7000', photos: [] },
             { id: 407, category: '景點', title: '到松亭站坐 海岸列車➔松亭站到尾浦站', time: '17:15~18:00', address: '부산 해운대구 송정중앙로8번길 60', naverUrl: 'https://naver.me/FgEZQXbQ', transitMode: '走路', transitTime: '15', taxiFee: '', photos: [] },
             { id: 408, category: '美食', title: '晚餐：풍천만민물장어 해운대본점 烤鰻魚', time: '18:30~20:00', openHours: '11:00~22:00', address: '부산 해운대구 달맞이길 22 1층', naverUrl: 'https://naver.me/xllYakSo', transitMode: '走路', transitTime: '10', taxiFee: '', photos: [] },
             { id: 409, category: '購物', title: '海雲台逛逛購物', time: '20:00~', photos: [] }
@@ -825,7 +805,6 @@
             { id: 602, category: '航班', title: '釜山 ➔ 台北(桃園)', time: '14:15~15:50', flightNo: 'BX 791', depCode: 'PUS', depTime: '14:15', arrCode: 'TPE', arrTime: '15:50', duration: '2h 35m', note: '11:30 到機場後辦理退稅、吃午餐', photos: [] }
           ]
         },
-        itineraryData: {},
 
         infoCards: [
           {
@@ -1097,39 +1076,37 @@
           groups[loc].push({ ...item, originalIndex: index });
         });
         return groups;
+      },
+      weatherIcon() {
+        return 'fa-solid fa-cloud-sun';
       }
     },
     mounted() {
-      // 實時監聽 Firestore 上的旅遊資料 (集合: busanTrip, 文件: mainData)
-      const tripDocRef = doc(db, "busanTrip", "mainData");
-      onSnapshot(tripDocRef, (docSnap) => {
+      // 實時監聽 Firebase 資料庫數據變更
+      onSnapshot(travelDocRef, (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
-          this.itineraryData = data.itineraryData || this.defaultItineraryData;
-          this.shoppingList = data.shoppingList || [];
-          this.expenses = data.expenses || [];
+          if (data.itineraryData) this.itineraryData = data.itineraryData;
+          if (data.shoppingList) this.shoppingList = data.shoppingList;
+          if (data.expenses) this.expenses = data.expenses;
         } else {
-          // 若無遠端資料，初始化並寫入預設行程
-          this.itineraryData = this.defaultItineraryData;
+          // 若雲端無資料，則初始化首次寫入
           this.syncToFirebase();
         }
-      }, (error) => {
-        console.error("Firestore 即時監聽失敗：", error);
       });
     },
     methods: {
-      // 將目前的全站狀態同步更新至 Firestore
+      // 將資料同步寫入 Firebase
       async syncToFirebase() {
         try {
-          const tripDocRef = doc(db, "busanTrip", "mainData");
-          await setDoc(tripDocRef, {
+          await setDoc(travelDocRef, {
             itineraryData: this.itineraryData,
             shoppingList: this.shoppingList,
             expenses: this.expenses
           });
         } catch (error) {
-          console.error("儲存至 Firebase 失敗：", error);
-          this.showToast('資料同步失敗，請再試一次');
+          console.error("Firebase 同步錯誤:", error);
+          this.showToast("資料寫入失敗，請確認網路！");
         }
       },
 
@@ -1153,6 +1130,7 @@
           this.showToast('複製失敗，請手動複製');
         });
       },
+
       showToast(msg) {
         this.toastMessage = msg;
         setTimeout(() => {
@@ -1223,27 +1201,63 @@
         }
       },
 
+      compressAndAddImage(file, targetArray, maxDim = 800) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let w = img.width;
+            let h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) {
+                h = Math.round((h * maxDim) / w);
+                w = maxDim;
+              } else {
+                w = Math.round((w * maxDim) / h);
+                h = maxDim;
+              }
+            }
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            const compressed = canvas.toDataURL('image/jpeg', 0.6);
+            targetArray.push(compressed);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      },
+
       handleFileUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          if (!this.modalItem.photos) {
-            this.modalItem.photos = [];
-          }
-          this.modalItem.photos.push(e.target.result);
-        };
-        reader.readAsDataURL(file);
+        if (!this.modalItem.photos) this.modalItem.photos = [];
+        this.compressAndAddImage(file, this.modalItem.photos);
       },
 
       handleShoppingFileUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
-        
+        const tempPhotos = [];
         const reader = new FileReader();
         reader.onload = (e) => {
-          this.newShopping.image = e.target.result;
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let w = img.width, h = img.height;
+            const maxDim = 600;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+              else { w = Math.round((w * maxDim) / h); h = maxDim; }
+            }
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            this.newShopping.image = canvas.toDataURL('image/jpeg', 0.6);
+          };
+          img.src = e.target.result;
         };
         reader.readAsDataURL(file);
       },
@@ -1251,15 +1265,8 @@
       handleExpenseFileUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          if (!this.newExpense.photos) {
-            this.newExpense.photos = [];
-          }
-          this.newExpense.photos.push(e.target.result);
-        };
-        reader.readAsDataURL(file);
+        if (!this.newExpense.photos) this.newExpense.photos = [];
+        this.compressAndAddImage(file, this.newExpense.photos);
       },
 
       removePhoto(index) {
@@ -1346,6 +1353,7 @@
         this.shoppingList[idx].isBought = !this.shoppingList[idx].isBought;
         this.syncToFirebase();
       },
+
       deleteShoppingItem(idx) {
         this.shoppingList.splice(idx, 1);
         this.syncToFirebase();
@@ -1367,8 +1375,9 @@
         this.syncToFirebase();
       }
     }
-  }).mount('#app');
-</script>
+  });
 
+  vueApp.mount('#app');
+</script>
 </body>
 </html>
