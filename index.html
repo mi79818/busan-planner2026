@@ -116,7 +116,7 @@
           <option value="航班">航班</option>
           <option value="其他">其他</option>
         </select>
-    
+        </div>
 
       <div id="itinerary-list" class="space-y-3">
         <template v-for="(item, idx) in currentDayItinerary" :key="item.id">
@@ -1057,7 +1057,7 @@
         });
         return groups;
       },
-    },
+  },
     mounted() {
       // 實時監聽 Firebase 資料庫數據變更
       onSnapshot(travelDocRef, (docSnap) => {
