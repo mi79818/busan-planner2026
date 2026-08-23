@@ -55,18 +55,21 @@
     }
   </script>
   <style>
-    body {
-      background-color: #B3E5FC; /* 延伸 Banner 天空背景色 */
-      font-family: 'Noto Sans TC', sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .hide-scrollbar::-webkit-scrollbar { display: none; }
-    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-  </style>
+  [v-cloak] { display: none !important; }
+
+  body {
+    background-color: #B3E5FC; /* 延伸 Banner 天空背景色 */
+    font-family: 'Noto Sans TC', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
 </head>
 <body class="flex justify-center min-h-screen">
 
-<div id="app" class="w-full max-w-md bg-[#F4F9F9] min-h-screen shadow-2xl relative flex flex-col pb-24">
+<!-- 請在 id="app" 後面加上 v-cloak -->
+<div id="app" v-cloak class="w-full max-w-md bg-[#F4F9F9] min-h-screen shadow-2xl relative flex flex-col pb-24">
 
   <!-- Toast 複製成功提示訊息 -->
   <div v-if="toastMessage" class="fixed top-5 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-4 py-2 rounded-full shadow-lg z-50 transition-all duration-300">
