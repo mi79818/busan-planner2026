@@ -198,7 +198,7 @@
               <div v-if="item.openHours || item.ticket || item.note" class="mt-3 text-xs text-gray-600 bg-gray-50 p-2.5 rounded-xl space-y-1">
                 <div v-if="item.openHours"><i class="fa-regular fa-clock mr-1 text-gray-400"></i>營業時間: {{ item.openHours }}</div>
                 <div v-if="item.ticket"><i class="fa-solid fa-ticket mr-1 text-gray-400"></i>門票費用: {{ item.ticket }}</div>
-                <div v-if="item.note"><i class="fa-regular fa-note-sticky mr-1 text-gray-400"></i>備註: {{ item.note }}</div>
+                <div v-if="item.note" class="whitespace-pre-line"><i class="fa-regular fa-note-sticky mr-1 text-gray-400"></i>備註: {{ item.note }}</div>
               </div>
 
               <div v-if="item.photos && item.photos.length > 0" class="mt-3 flex flex-wrap gap-1.5">
@@ -408,7 +408,9 @@
                class="rounded-2xl p-3 shadow-sm border relative group flex flex-col justify-between transition-all">
             <div>
               <div class="w-full h-28 bg-gray-100 rounded-xl overflow-hidden mb-2 relative">
-                <img :src="item.image || 'https://via.placeholder.com/150?text=No+Image'" class="w-full h-full object-cover">
+                <img :src="item.image || 'https://via.placeholder.com/150?text=No+Image'" 
+                    @click="item.image && (previewImageUrl = item.image)" 
+                    class="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity">
                 <button @click="toggleBought(item.originalIndex)" 
                         :class="item.isBought ? 'bg-emerald-500 text-white' : 'bg-black/40 text-white hover:bg-black/60'"
                         class="absolute top-2 left-2 w-7 h-7 rounded-full flex items-center justify-center text-xs transition-colors z-10 shadow-md">
