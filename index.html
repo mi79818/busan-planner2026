@@ -418,19 +418,28 @@
                 </button>
               </div>
               <div class="flex-1 w-full min-w-0">
-    <h4 class="font-bold text-xs text-gray-800 break-words whitespace-normal leading-normal" :class="item.isBought ? 'line-through text-gray-400' : ''">
-      {{ item.name }}
-              </h4>
-              <div v-if="item.note" class="text-[10px] text-gray-400 mt-1 break-words whitespace-normal">{{ item.note }}</div>
+                <h4 class="font-bold text-xs text-gray-800 break-words whitespace-normal leading-normal" :class="item.isBought ? 'line-through text-gray-400' : ''">
+                  {{ item.name }}
+                </h4>
+                <div v-if="item.note" class="text-[10px] text-gray-400 mt-1 break-words whitespace-normal">{{ item.note }}</div>
+              </div>
+              
+              <!-- 編輯與刪除按鈕區塊 -->
+              <div class="absolute top-2 right-2 flex space-x-1 z-10">
+                <button @click="openEditShoppingModal(item.originalIndex)" class="bg-black/50 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center hover:bg-ocean-dark transition-colors">
+                  <i class="fa-solid fa-pen text-[10px]"></i>
+                </button>
+                <button @click="deleteShoppingItem(item.originalIndex)" class="bg-black/50 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center hover:bg-red-500 transition-colors">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+
             </div>
-            <button @click="deleteShoppingItem(item.originalIndex)" class="absolute top-2 right-2 bg-black/50 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center z-10 hover:bg-red-500 transition-colors">
-              <i class="fa-solid fa-xmark"></i>
-            </button>
           </div>
         </div>
       </div>
 
-      <button @click="showShoppingModal = true" class="fixed bottom-6 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30">
+      <button @click="openAddShoppingModal" class="fixed bottom-6 right-6 w-14 h-14 bg-ocean-dark text-white rounded-full shadow-2xl flex items-center justify-center text-2xl z-30">
         <i class="fa-solid fa-plus"></i>
       </button>
     </div>
@@ -579,10 +588,10 @@
     </div>
   </div>
 
-  <!-- Modal 3: 新增購物項目 -->
+  <!-- Modal 3: 新增/編輯購物項目 -->
   <div v-if="showShoppingModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
     <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-3">
-      <h3 class="font-bold text-base text-gray-800 mb-2">新增購物欲買清單</h3>
+      <h3 class="font-bold text-base text-gray-800 mb-2">{{ isShoppingEditMode ? '編輯購物欲買項目' : '新增購物欲買清單' }}</h3>
 
       <div>
         <label class="text-xs text-gray-500">商品名稱 *</label>
@@ -623,7 +632,7 @@
 
       <div class="flex space-x-2 pt-3">
         <button @click="showShoppingModal = false" class="flex-1 bg-gray-100 text-gray-600 rounded-xl py-3 text-xs font-bold">取消</button>
-        <button @click="saveShoppingItem" class="flex-1 bg-ocean-dark text-white rounded-xl py-3 text-xs font-bold">新增</button>
+        <button @click="saveShoppingItem" class="flex-1 bg-ocean-dark text-white rounded-xl py-3 text-xs font-bold">{{ isShoppingEditMode ? '儲存修改' : '新增' }}</button>
       </div>
     </div>
   </div>
@@ -732,6 +741,8 @@
         showShoppingModal: false,
         showExpenseModal: false,
         isEditMode: false,
+        isShoppingEditMode: false,
+        editingShoppingIndex: null,
         modalItem: { photos: [] },
         shoppingList: [],
         expenses: [],
@@ -771,7 +782,7 @@
             { id: 201, category: '景點', title: '송도 베이스테이션(해상케이블카) 松島纜車', time: '10:10~12:00', openHours: '09:00~22:00', address: '부산 서구 송도해변로 171', naverUrl: 'https://naver.me/FvTJ9azl', transitMode: '計程車', transitTime: '30', taxiFee: '11100', photos: [] },
             { id: 202, category: '美食', title: '午餐：태종대짬뽕 太宗台炒瑪麵', time: '12:30~14:00', openHours: '09:30~21:30，週三休息', address: '부산 영도구 태종로 805 태짬', naverUrl: 'https://naver.me/5MvcLg2O', transitMode: '計程車', transitTime: '15', taxiFee: '8100', photos: [] },
             { id: 203, category: '景點', title: '흰여울문화마을 白淺灘文化村', time: '14:00~16:00', note: '下車地點：해빙모먼트 Having moment咖啡店 →藍色小房子188-1號旁巷子往下走 可以看到景點A', address: '부산 영도구 절영로 196 해빙모먼트', naverUrl: 'https://naver.me/GXFV1HpJ', transitMode: '計程車', transitTime: '40', taxiFee: '18300', photos: [] },
-            { id: 204, category: '景點', title: '回廣安里逛逛 / 晚餐：이낙에산다 광안리본점 章腸蝦鍋', time: '17:00~20:00', note: '下車地點：광안리관광안내소 廣安里旅遊諮詢處 (https://naver.me/xzxmTb5m)', address: '부산 수영구 남천바다로10번길 68 1층 이낙에산다', naverUrl: 'https://naver.me/xSBoXMyG', transitMode: '計程車', transitTime: '25', taxiFee: '', photos: [] },
+            { id: 204, category: '景點', title: '回廣安里逛逛 / 晚餐：이낙에산다 광안리본점 章腸蝦鍋', time: '17:00~20:00', note: '下車地點：광안리관광안내소 廣安里旅遊諮詢處 (https://naver.me/xzxmTb5m)', address: '부산 수영구 남천바다로10번길 68 1층 이낙에산다', naverUrl: 'https://naver.me/xSBoXG2J', transitMode: '計程車', transitTime: '25', taxiFee: '', photos: [] },
             { id: 205, category: '景點', title: '彈性行程2選1：황령산 봉수대 荒嶺山夜景 或 廣安里海邊', time: '20:00~', note: '計程車費：去程₩8,000、返程₩11,600', address: '부산 부산진구 전포동 산50-18', naverUrl: 'https://naver.me/xNpbw4Xw', transitMode: '計程車', transitTime: '10', taxiFee: '', photos: [] },
             { id: 206, category: '美食', title: '宵夜2選1：맹구포차 居酒屋 或 푸라닭 PURADAK炸雞', time: '22:00~', openHours: '居酒屋: 18:00~04:00 / 炸雞: 12:00~24:00', note: '炸雞車程約10分(₩6,600)(可叫外送)，推薦口味:黑蒜炸雞/烤玉米起司/墨西哥辣椒', address: '부산 수영구 남천바다로33번길 72 1층 (居酒屋) / 부산 수영구 광안해변로 446 (炸雞)', naverUrl: 'https://naver.me/Fz8CYxyt', taxiFee: '6600', photos: [] }
           ],
@@ -1336,12 +1347,32 @@
         }
       },
 
+      openAddShoppingModal() {
+        this.isShoppingEditMode = false;
+        this.editingShoppingIndex = null;
+        this.newShopping = { name: '', location: '', note: '', image: '', isBought: false };
+        this.showShoppingModal = true;
+      },
+
+      openEditShoppingModal(idx) {
+        this.isShoppingEditMode = true;
+        this.editingShoppingIndex = idx;
+        this.newShopping = JSON.parse(JSON.stringify(this.shoppingList[idx]));
+        this.showShoppingModal = true;
+      },
+
       saveShoppingItem() {
         if (!this.newShopping.name) {
           alert('請輸入商品名稱！');
           return;
         }
-        this.shoppingList.push({ ...this.newShopping });
+
+        if (this.isShoppingEditMode && this.editingShoppingIndex !== null) {
+          this.shoppingList[this.editingShoppingIndex] = { ...this.newShopping };
+        } else {
+          this.shoppingList.push({ ...this.newShopping });
+        }
+
         this.newShopping = { name: '', location: '', note: '', image: '', isBought: false };
         this.showShoppingModal = false;
         this.syncToFirebase();
@@ -1353,8 +1384,10 @@
       },
 
       deleteShoppingItem(idx) {
-        this.shoppingList.splice(idx, 1);
-        this.syncToFirebase();
+        if (confirm('確定要刪除此購物項目嗎？')) {
+          this.shoppingList.splice(idx, 1);
+          this.syncToFirebase();
+        }
       },
 
       saveExpenseItem() {
